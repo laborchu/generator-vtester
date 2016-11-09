@@ -3,8 +3,8 @@ var yeoman = require('yeoman-generator');
 var chalk = require('chalk');
 var yosay = require('yosay');
 var path = require('path');
-var _ = require('lodash');
-var extend = require('deep-extend');
+//var _ = require('lodash');
+//var extend = require('deep-extend');
 var mkdirp = require('mkdirp');
 
 
@@ -100,8 +100,12 @@ module.exports = yeoman.Base.extend({
     );
     this.fs.copy(
       this.templatePath('src/global.uc.js'),
-      this.destinationPath('src/'+pkg.main)
+      this.destinationPath('src/global.uc.js')
     );
+
+    mkdirp(this.destinationPath('test/'));
+    mkdirp(this.destinationPath('src/handler'));
+    mkdirp(this.destinationPath('src/uc'));
   },
 
   install: function () {
