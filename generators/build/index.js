@@ -75,14 +75,26 @@ module.exports = yeoman.Base.extend({
     },
 
     defaults: function() {
-        this.ucPath = "/Users/laborc/code/gitos/gitosx16/k12/k12-os-vtester/src/uc/";
-        this.ucDistPath = "/Users/laborc/code/gitos/gitosx16/k12/k12-os-vtester/src/dist/";
-        this.tplPath = "/Users/laborc/code/gitos/gitosx16/k12/k12-os-vtester/src/tpl/";
-        this.handlerPath = "/Users/laborc/code/gitos/gitosx16/k12/k12-os-vtester/src/handler/";
-        // this.ucPath = this.destinationPath()+"/src/uc/";
-        // this.ucDistPath = this.destinationPath()+"/src/dist/";
-        // this.handlerPath = this.destinationPath()+"/src/handler/";
-        // this.tplPath = this.templatePath();
+        if(this.options.ucPath){
+            this.ucPath = this.options.ucPath;
+        }else{
+            this.ucPath = this.destinationPath()+"/src/uc/";
+        }
+        if(this.options.ucDistPath){
+            this.ucDistPath = this.options.ucDistPath;
+        }else{
+            this.ucDistPath = this.destinationPath()+"/src/dist/";
+        }
+        if(this.options.tplPath){
+            this.tplPath = this.options.tplPath;
+        }else{
+            this.tplPath = this.destinationPath()+"/src/dist/";
+        }
+        if(this.options.handlerPath){
+            this.handlerPath = this.options.handlerPath;
+        }else{
+            this.handlerPath = this.templatePath();
+        }
     },
 
     _iteratorUc: function(itCache, children) {
