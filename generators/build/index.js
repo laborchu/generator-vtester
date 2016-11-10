@@ -9,50 +9,14 @@ var fs = require('fs');
 var ItBuilder = function() {
     this.itContent = "return driver";
 };
-ItBuilder.prototype.goUrl = function(url) {
-    var compiled = _.template(".get('<%= url %>')");
-    this.itContent = this.itContent.concat(compiled({ 'url': url }));
-    return this;
-};
-ItBuilder.prototype.clickElementByXPath = function(xpath) {
-    var compiled = _.template('.elementByXPathOrNull("<%= xpath %>").click()');
-    this.itContent = this.itContent.concat(compiled({ 'xpath': xpath }));
-    return this;
-};
-ItBuilder.prototype.clickElementByClassName = function(className) {
-    var compiled = _.template('.elementByClassName("<%= className %>").click()');
-    this.itContent = this.itContent.concat(compiled({ 'className': className }));
-    return this;
-};
 
-ItBuilder.prototype.inputElementByName = function(name, value) {
-    var compiled = _.template('.elementByName("<%= name %>").clear().sendKeys("<%= value %>")');
-    this.itContent = this.itContent.concat(compiled({ 'name': name, 'value': value }));
-    return this;
-};
-ItBuilder.prototype.eqElementByXPath = function(xpath, value) {
-    var compiled = _.template('.elementByXPathOrNull("<%= xpath %>").text().then(function(element) {"<%= value %>".should.equal(element);})');
-    this.itContent = this.itContent.concat(compiled({ 'xpath': xpath, 'value': value }));
-    return this;
-};
-ItBuilder.prototype.eqsElementsByXPath = function(xpath, value) {
-    var compiled = _.template('.elementsByXPath("<%= xpath %>").then(function(els) {return els.reduce(function (prev, el) {return prev.then(function() {return el.text().then(function(text){[<%= value %>].should.containEql(text);});});}, Promise.resolve());})');
-    this.itContent = this.itContent.concat(compiled({ 'xpath': xpath, 'value': value }));
-    return this;
-};
-ItBuilder.prototype.stopElementByXPath = function(xpath, value, stopBuilder) {
-    var compiled = _.template('.elementByXPathOrNull("<%= xpath %>").text().then(function(element) {if((element?element:"")!="<%= value %>"){<%= body %>}})');
-    this.itContent = this.itContent.concat(compiled({ 'xpath': xpath, 'value': value, 'body': stopBuilder.toString() }));
-    return this;
-};
-ItBuilder.prototype.checkAjax = function(url, doer) {
-    var compiled = _.template('.elementByXPathOrNull("//div[contains(@class, \'ajax-result\')]/div[@data-url=\'<%= url %>\'][last()]").getAttribute("data-res").then(function(element) {handler.<%= doer %>(element)})');
-    this.itContent = this.itContent.concat(compiled({ 'url': url, 'doer': doer}));
-    return this;
-};
 ItBuilder.prototype.sleep = function(time) {
     var compiled = _.template(".sleep(<%= time %>)");
     this.itContent = this.itContent.concat(compiled({ 'time': time }));
+    return this;
+};
+ItBuilder.prototype.append = function(content) {
+    this.itContent = this.itContent.concat(content);
     return this;
 };
 ItBuilder.prototype.toString = function() {
@@ -75,26 +39,20 @@ module.exports = yeoman.Base.extend({
     },
 
     defaults: function() {
-        if(this.options.ucPath){
-            this.ucPath = this.options.ucPath;
+        if(this.options.projectPath){
+            this.projectPath = this.options.projectPath;
+            this.tplPath = this.projectPath+"/src/tpl/";
         }else{
-            this.ucPath = this.destinationPath()+"/src/uc/";
+            this.projectPath = this.destinationPath();
+            this.tplPath = this.templatePath;
         }
-        if(this.options.ucDistPath){
-            this.ucDistPath = this.options.ucDistPath;
-        }else{
-            this.ucDistPath = this.destinationPath()+"/src/dist/";
-        }
-        if(this.options.tplPath){
-            this.tplPath = this.options.tplPath;
-        }else{
-            this.tplPath = this.destinationPath()+"/src/dist/";
-        }
-        if(this.options.handlerPath){
-            this.handlerPath = this.options.handlerPath;
-        }else{
-            this.handlerPath = this.templatePath();
-        }
+        this.ucPath = this.projectPath+"/src/uc/";
+        this.ucDistPath = this.projectPath+"/src/dist/";
+        this.handlerPath = this.projectPath+"/src/handler/";
+        this.plugins = {
+            path:{},
+            checker:{}
+        };
     },
 
     _iteratorUc: function(itCache, children) {
@@ -112,18 +70,11 @@ module.exports = yeoman.Base.extend({
     _buildPath: function(index, paths, builder) {
         var self = this;
         var step = paths[index];
-        if (step.type == "url") {
-            builder.goUrl(step.url);
-        } else if (step.type == "click") {
-            if (step.selector == "xpath") {
-                builder.clickElementByXPath(step.element);
-            } else if (step.selector == "className") {
-                builder.clickElementByClassName(step.element);
-            }
-        } else if (step.type == "input") {
-            if (step.selector == "name") {
-                builder.inputElementByName(step.element, step.value);
-            }
+
+        var pathPlugin = self.plugins.path[step.type];
+        if(pathPlugin){
+            builder.append(pathPlugin.build(step));
+            //console.log(pathPlugin.build(step));
         }
 
         if (step.sleep && step.sleep > 0) {
@@ -140,23 +91,17 @@ module.exports = yeoman.Base.extend({
             var hasStop = false;
             Object.keys(step.checker).forEach(function(key) {
                 var checkData = step.checker[key];
-                if (key == "stop") {
-                    hasStop = true;
-                    if (checkData.selector == "xpath") {
+                var checkerPlugin = self.plugins.checker[key];
+                if(checkerPlugin){
+                    if (key == "stop") {
+                        hasStop = true;
                         var stopBuilder = new ItBuilder();
                         goNext(stopBuilder);
-                        builder.stopElementByXPath(checkData.element, checkData.value, stopBuilder);
+                        var config = _.extend({body:stopBuilder.toString()},checkData);
+                        builder.append(checkerPlugin.build(config));
+                    }else{
+                        builder.append(checkerPlugin.build(checkData));
                     }
-                } else if (key == "eq") {
-                    if (checkData.selector == "xpath") {
-                        builder.eqElementByXPath(checkData.element, checkData.value);
-                    }
-                } else if (key == "eqs") {
-                    if (checkData.selector == "xpath") {
-                        builder.eqsElementsByXPath(checkData.element, checkData.value);
-                    }
-                } else if (key == "ajax") {
-                        builder.checkAjax(checkData.url, checkData.doer);
                 }
                 if (checkData.sleep && checkData.sleep > 0) {
                     builder.sleep(checkData.sleep);
@@ -220,8 +165,36 @@ module.exports = yeoman.Base.extend({
         return preTplStr.concat('\r\n', tplStr);
     },
 
+    _loadPlugins:function(rootPath,cat){
+        var self = this;
+        var pluginFolder = path.join(rootPath,cat);
+        var pluginFiles = fs.readdirSync(pluginFolder);
+        pluginFiles.forEach(function (filename) {
+            var filePath = path.join(pluginFolder, filename);
+            if(fs.lstatSync(filePath).isDirectory()){
+                var pluginPath = path.join(filePath, "index.js");
+                if(fs.existsSync(pluginPath)){
+                    var Plugin = require(pluginPath);
+                    var plugin = new Plugin();
+                    plugin.init(filename);
+                    self.plugins[cat][filename]=plugin;
+                }
+            }
+        });
+    },
+
     writing: function() {
         var self = this;
+
+        //读取默认插件
+        var defaultPluginPath = this.templatePath("../plugins");
+        //读取path plugin
+        self._loadPlugins(defaultPluginPath,"path");
+        //读取checker plugin
+        self._loadPlugins(defaultPluginPath,"checker");
+
+        //读取项目插件
+
         //读取所有的uc文件
         fs.readdir(self.ucPath, (err, files) => {
             //缓存uc文件数据
