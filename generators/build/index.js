@@ -1,4 +1,3 @@
-/*jslint node: true */
 "use strict";
 var yeoman = require('yeoman-generator');
 var chalk = require('chalk');
@@ -89,13 +88,13 @@ module.exports = yeoman.Base.extend({
     _iteratorUc: function(itCache, children) {
         var self = this;
         children.forEach(child => {
-            if (child.itKey) {
-                itCache[child.itKey] = child;
+            if (child.ucKey) {
+                itCache[child.ucKey] = child;
             }
             if (child.children && _.isArray(child.children)) {
                 self._iteratorUc(itCache, child.children);
             }
-        });
+        }); 
     },
 
     _buildPath: function(index, paths, builder) {
@@ -125,10 +124,10 @@ module.exports = yeoman.Base.extend({
             }
         };
 
-        if (step.checking) {
+        if (step.checker) {
             var hasStop = false;
-            Object.keys(step.checking).forEach(function(key) {
-                var checkData = step.checking[key];
+            Object.keys(step.checker).forEach(function(key) {
+                var checkData = step.checker[key];
                 if (key == "stop") {
                     hasStop = true;
                     if (checkData.selector == "xpath") {
