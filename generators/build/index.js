@@ -20,7 +20,7 @@ ItBuilder.prototype.append = function(content) {
     return this;
 };
 ItBuilder.prototype.toString = function() {
-    return this.itContent;
+    return this.itContent+";";
 };
 
 
@@ -133,24 +133,15 @@ module.exports = yeoman.Base.extend({
         var params = { "title": uc.title };
         var readmeTpl;
         var content = "";
-        if (uc.children && _.isArray(uc.children)) {
-            
-            uc.children.forEach(child => {
-                var it = self._buildUc(itCache, child);
-                content = content.concat(it);
-            });
-            params.body = content;
-            readmeTpl = _.template(this.fs.read(path.join(self.tplPath, "describe.tpl.js")));
-        } else {
-            content = "";
-            if (uc.paths && _.isArray(uc.paths)) {
-                var builder = new ItBuilder();
-                self._buildPath(0, uc.paths, builder);
-                if (uc.sleep && uc.sleep > 0) {
-                    builder.sleep(uc.sleep);
-                }
-                content = builder.toString();
+        var prePath = "";
+        //判断uc是否存在path
+        if (uc.paths && _.isArray(uc.paths)) {
+            var builder = new ItBuilder();
+            self._buildPath(0, uc.paths, builder);
+            if (uc.sleep && uc.sleep > 0) {
+                builder.sleep(uc.sleep);
             }
+            content = builder.toString();
             params.body = content;
             if(uc.only&&uc.only===true){
                 params.only = true;
@@ -159,10 +150,30 @@ module.exports = yeoman.Base.extend({
                 params.only = false;
             }
             readmeTpl = _.template(this.fs.read(path.join(self.tplPath, "it.tpl.js")));
+            var itStr = readmeTpl(params);
+            if (uc.children && _.isArray(uc.children)) {
+                prePath = itStr;
+            }else{
+                preTplStr = preTplStr.concat(itStr);
+            }
         }
-        var tplStr = readmeTpl(params);
+        if (uc.children && _.isArray(uc.children)) {
+            if(prePath){
+                content = prePath;
+            }else{
+                content = "";
+            }
+            uc.children.forEach(child => {
+                var it = self._buildUc(itCache, child);
+                content = content.concat(it);
+            });
+            params.body = content;
+            readmeTpl = _.template(this.fs.read(path.join(self.tplPath, "describe.tpl.js")));
+            var describeStr = readmeTpl(params);
+            preTplStr = preTplStr.concat(describeStr);
+        }
         //console.log(tplStr)
-        return preTplStr.concat('\r\n', tplStr);
+        return preTplStr;
     },
 
     _loadPlugins:function(rootPath,cat){
