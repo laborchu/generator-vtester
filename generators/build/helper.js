@@ -31,23 +31,26 @@ module.exports = {
 		should(path).ok();
 		should(path).instanceOf(Object);
 		path.should.have.property('title').instanceOf(String).ok();
-		path.should.have.property('type').instanceOf(String).ok();
-		if(path.type!=='url'&&path.type!=='click'&&path.type!=='input'){
-			throw new Error('path.type should in (url|click|input)');
-		}
-		if(path.type==='url'){
-			path.should.have.property('url').instanceOf(String).ok();
-		}
-		if(path.type==='click'||path.type==='input'){
-			path.should.have.property('selector').instanceOf(String).ok();
-			path.should.have.property('element').instanceOf(String).ok();
-			if(path.selector!=='xpath'&&path.selector!=='name'&&path.selector!=='className'){
-				throw new Error('path.selector should in (xpath|name|className)');
-			}
-		}
-		if(path.type==='input'){
-			path.should.have.property('value').instanceOf(String).ok();
-		}
+
+    if(path.hasOwnProperty('type')){
+      should(path.type).instanceOf(String).ok();
+      if(path.type!=='url'&&path.type!=='click'&&path.type!=='input'){
+        throw new Error('path.type should in (url|click|input)');
+      }
+      if(path.type==='url'){
+        path.should.have.property('url').instanceOf(String).ok();
+      }
+      if(path.type==='click'||path.type==='input'){
+        path.should.have.property('selector').instanceOf(String).ok();
+        path.should.have.property('element').instanceOf(String).ok();
+        if(path.selector!=='xpath'&&path.selector!=='name'&&path.selector!=='className'){
+          throw new Error('path.selector should in (xpath|name|className)');
+        }
+      }
+      if(path.type==='input'){
+        path.should.have.property('value').instanceOf(String);
+      }
+    }
 		if(path.hasOwnProperty('sleep')){
 			should(path.sleep).instanceOf(Number);
 		}

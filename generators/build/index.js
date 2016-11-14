@@ -76,7 +76,6 @@ module.exports = yeoman.Base.extend({
         var pathPlugin = self.plugins.path[step.type];
         if(pathPlugin){
             builder.append(pathPlugin.build(step));
-            //console.log(pathPlugin.build(step));
         }
 
         if (step.sleep && step.sleep > 0) {
