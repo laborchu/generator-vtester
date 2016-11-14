@@ -5,6 +5,7 @@ var yosay = require('yosay');
 var path = require('path');
 var _ = require('lodash');
 var fs = require('fs');
+var helper = require('./helper');
 
 var ItBuilder = function() {
     this.itContent = "return driver";
@@ -70,6 +71,7 @@ module.exports = yeoman.Base.extend({
     _buildPath: function(index, paths, builder) {
         var self = this;
         var step = paths[index];
+        helper.checkPathConfig(step);
 
         var pathPlugin = self.plugins.path[step.type];
         if(pathPlugin){
@@ -91,6 +93,7 @@ module.exports = yeoman.Base.extend({
             var hasStop = false;
             Object.keys(step.checker).forEach(function(key) {
                 var checkData = step.checker[key];
+                helper.checkPathConfig(key,checkData);
                 var checkerPlugin = self.plugins.checker[key];
                 if(checkerPlugin){
                     if (key == "stop") {
@@ -117,6 +120,7 @@ module.exports = yeoman.Base.extend({
     },
 
     _buildUc: function(itCache, uc) {
+        helper.checkUcConfig(uc);
         var self = this;
         //处理前置uc
         var preTplStr = "";
@@ -132,7 +136,6 @@ module.exports = yeoman.Base.extend({
         //处理uc
         var params = { "title": uc.title };
         var readmeTpl;
-        var content = "";
         var prePath = "";
         //判断uc是否存在path
         if (uc.paths && _.isArray(uc.paths)) {
@@ -141,8 +144,7 @@ module.exports = yeoman.Base.extend({
             if (uc.sleep && uc.sleep > 0) {
                 builder.sleep(uc.sleep);
             }
-            content = builder.toString();
-            params.body = content;
+            params.body = builder.toString();
             if(uc.only&&uc.only===true){
                 params.only = true;
                 console.log("has only");
@@ -158,10 +160,9 @@ module.exports = yeoman.Base.extend({
             }
         }
         if (uc.children && _.isArray(uc.children)) {
+            let content = "";
             if(prePath){
                 content = prePath;
-            }else{
-                content = "";
             }
             uc.children.forEach(child => {
                 var it = self._buildUc(itCache, child);
