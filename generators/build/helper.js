@@ -33,7 +33,7 @@ module.exports = {
 		path.should.have.property('title').instanceOf(String).ok();
 		path.should.have.property('type').instanceOf(String).ok();
 		if(path.type!=='url'&&path.type!=='click'&&path.type!=='input'){
-			throw new Error('path.type should in (url|click|input)'); 
+			throw new Error('path.type should in (url|click|input)');
 		}
 		if(path.type==='url'){
 			path.should.have.property('url').instanceOf(String).ok();
@@ -42,7 +42,7 @@ module.exports = {
 			path.should.have.property('selector').instanceOf(String).ok();
 			path.should.have.property('element').instanceOf(String).ok();
 			if(path.selector!=='xpath'&&path.selector!=='name'&&path.selector!=='className'){
-				throw new Error('path.selector should in (xpath|name|className)'); 
+				throw new Error('path.selector should in (xpath|name|className)');
 			}
 		}
 		if(path.type==='input'){
@@ -59,12 +59,14 @@ module.exports = {
 	checkCheckerConfig:function (key,checker) {
 		should(key).instanceOf(String).ok();
 		should(checker).instanceOf(Object).ok();
-		if(key!=='stop'&&key!=='eq'&&key!=='eqs'){
-			throw new Error('path.type should in (stop|eq|eqs)'); 
+		if(key!=='stop'&&key!=='eq'&&key!=='eqs'&&key!=='ajax'){
+			throw new Error('path.type should in (stop|eq|eqs)');
 		}else{
-			checker.should.have.property('selector').instanceOf(String).ok();
-			checker.should.have.property('element').instanceOf(String).ok();
-			checker.should.have.property('value').instanceOf(String).ok();
+      if(key==='stop'||key==='eq'||key==='eqs'){
+        checker.should.have.property('selector').instanceOf(String).ok();
+        checker.should.have.property('element').instanceOf(String).ok();
+        checker.should.have.property('value');
+      }
 		}
 		if(checker.hasOwnProperty('sleep')){
 			should(checker.sleep).instanceOf(Number);

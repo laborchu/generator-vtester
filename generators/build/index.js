@@ -65,7 +65,7 @@ module.exports = yeoman.Base.extend({
             if (child.children && _.isArray(child.children)) {
                 self._iteratorUc(itCache, child.children);
             }
-        }); 
+        });
     },
 
     _buildPath: function(index, paths, builder) {
@@ -93,7 +93,7 @@ module.exports = yeoman.Base.extend({
             var hasStop = false;
             Object.keys(step.checker).forEach(function(key) {
                 var checkData = step.checker[key];
-                helper.checkPathConfig(key,checkData);
+                helper.checkCheckerConfig(key,checkData);
                 var checkerPlugin = self.plugins.checker[key];
                 if(checkerPlugin){
                     if (key == "stop") {
@@ -248,7 +248,7 @@ module.exports = yeoman.Base.extend({
                     var fileContent = self._buildUc(itCache, uc);
                     var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
                     self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({ "body": fileContent,"handler":handler,"handlerName":handlerName }));
-                   
+
                 }
             });
 
