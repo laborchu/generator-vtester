@@ -35,7 +35,7 @@ module.exports = {
         if (path.hasOwnProperty('type')) {
             should(path.type).instanceOf(String).ok();
             if (path.type !== 'url' && path.type !== 'click' && path.type !== 'input' && path.type !== 'ueditor') {
-                throw new Error('path.type should in (url|click|input)');
+                throw new Error('path.type should in (url|click|input|ueditor)');
             }
             if (path.type === 'url') {
                 path.should.have.property('url').instanceOf(String).ok();
