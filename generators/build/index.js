@@ -24,8 +24,71 @@ ItBuilder.prototype.append = function(content) {
     return this;
 };
 ItBuilder.prototype.toString = function() {
-    return this.itContent+";";
+    return this.itContent + ";";
 };
+
+/**
+ * 控制流/同步
+ * @param {Array} arr
+ * @param {Function} callback1 传递两个参数 (item,next)，执行完一项则需执行next()才能执行下一项
+ * @param {Function} callback2 出错或执行完时回调
+ * @returns {*}
+ */
+function async(arr, callback1, callback2) {
+    if (Object.prototype.toString.call(arr) !== '[object Array]') {
+        return callback2(new Error('第一个参数必须为数组'));
+    }
+    if (arr.length === 0)
+        return callback2(null);
+    (function walk(i) {
+        if (i >= arr.length) {
+            return callback2(null);
+        }
+        callback1(arr[i], function() {
+            walk(++i);
+        });
+    })(0);
+}
+
+var emptyDir = function(fileUrl) {
+    var files = fs.readdirSync(fileUrl); //读取该文件夹
+    files.forEach(function(file) {
+        var stats = fs.statSync(fileUrl + '/' + file);
+        if (stats.isDirectory()) {
+            emptyDir(fileUrl + '/' + file);
+        } else {
+            fs.unlinkSync(fileUrl + '/' + file);
+        }
+    });
+};
+
+var readAllUc = function(dir, callback) {
+            var filesArr = [];
+            dir = (function dir(dirpath, fn) {
+                var files = fs.readdirSync(dirpath);
+                async(files, function(item, next) {
+                    var info = fs.statSync(dirpath + item);
+                    if (info.isDirectory()) {
+                        dir(dirpath + item + '/', function() {
+                            next();
+                        });
+                    } else {
+                        if (item.endsWith('.uc.js')) {
+                            filesArr.push(dirpath + item);
+                        }
+                        if (callback) {
+                            callback(dirpath + item);
+                        }
+                        next();
+                    }
+                }, function(err) {
+                    if (!err && fn) {
+                        fn();
+                    }
+                });
+            })(dir);
+            return filesArr;
+        };
 
 
 module.exports = yeoman.Base.extend({
@@ -43,19 +106,19 @@ module.exports = yeoman.Base.extend({
     },
 
     defaults: function() {
-        if(this.options.projectPath){
+        if (this.options.projectPath) {
             this.projectPath = this.options.projectPath;
-            this.tplPath = this.projectPath+"/src/tpl/";
-        }else{
+            this.tplPath = this.projectPath + "/src/tpl/";
+        } else {
             this.projectPath = this.destinationPath();
             this.tplPath = this.templatePath;
         }
-        this.ucPath = this.projectPath+"/src/uc/";
-        this.ucDistPath = this.projectPath+"/src/dist/";
-        this.handlerPath = this.projectPath+"/src/handler/";
+        this.ucPath = this.projectPath + "/src/uc/";
+        this.ucDistPath = this.projectPath + "/src/dist/";
+        this.handlerPath = this.projectPath + "/src/handler/";
         this.plugins = {
-            path:{},
-            checker:{}
+            path: {},
+            checker: {}
         };
     },
 
@@ -76,8 +139,8 @@ module.exports = yeoman.Base.extend({
         var step = paths[index];
 
         var pathPlugin = self.plugins.path[step.type];
-        if(pathPlugin){
-            helper.checkPathConfig(pathPlugin,step);//检查配置
+        if (pathPlugin) {
+            helper.checkPathConfig(pathPlugin, step); //检查配置
             builder.append(pathPlugin.build(step));
         }
 
@@ -96,15 +159,15 @@ module.exports = yeoman.Base.extend({
             Object.keys(step.checker).forEach(function(key) {
                 var checkData = step.checker[key];
                 var checkerPlugin = self.plugins.checker[key];
-                if(checkerPlugin){
-                    helper.checkCheckerConfig(checkerPlugin,checkData);//检查配置
+                if (checkerPlugin) {
+                    helper.checkCheckerConfig(checkerPlugin, checkData); //检查配置
                     if (key == "stop") {
                         hasStop = true;
                         var stopBuilder = new ItBuilder();
                         goNext(stopBuilder);
-                        var config = _.extend({body:stopBuilder.toString()},checkData);
+                        var config = _.extend({ body: stopBuilder.toString() }, checkData);
                         builder.append(checkerPlugin.build(config));
-                    }else{
+                    } else {
                         builder.append(checkerPlugin.build(checkData));
                     }
                 }
@@ -121,7 +184,7 @@ module.exports = yeoman.Base.extend({
 
     },
 
-    _buildUc: function(itCache, uc,index) {
+    _buildUc: function(itCache, uc, index) {
         index = index || 0;
         var self = this;
         //处理前置uc
@@ -135,7 +198,7 @@ module.exports = yeoman.Base.extend({
                 preTplStr = self._buildUc(itCache, itCache[uc.preUc]);
             }
         }
-        helper.checkUcConfig(uc,index);
+        helper.checkUcConfig(uc, index);
         //处理uc
         var params = { "title": uc.title };
         var readmeTpl;
@@ -148,27 +211,27 @@ module.exports = yeoman.Base.extend({
                 builder.sleep(uc.sleep);
             }
             params.body = builder.toString();
-            if(uc.only&&uc.only===true){
+            if (uc.only && uc.only === true) {
                 params.only = true;
                 console.log("has only");
-            }else {
+            } else {
                 params.only = false;
             }
             readmeTpl = _.template(this.fs.read(path.join(self.tplPath, "it.tpl.js")));
             var itStr = readmeTpl(params);
             if (uc.children && _.isArray(uc.children)) {
                 prePath = itStr;
-            }else{
+            } else {
                 preTplStr = preTplStr.concat(itStr);
             }
         }
         if (uc.children && _.isArray(uc.children)) {
             let content = "";
-            if(prePath){
+            if (prePath) {
                 content = prePath;
             }
             uc.children.forEach((child) => {
-                var it = self._buildUc(itCache, child,index+1);
+                var it = self._buildUc(itCache, child, index + 1);
                 content = content.concat(it);
             });
             params.body = content;
@@ -180,19 +243,19 @@ module.exports = yeoman.Base.extend({
         return preTplStr;
     },
 
-    _loadPlugins:function(rootPath,cat){
+    _loadPlugins: function(rootPath, cat) {
         var self = this;
-        var pluginFolder = path.join(rootPath,cat);
+        var pluginFolder = path.join(rootPath, cat);
         var pluginFiles = fs.readdirSync(pluginFolder);
-        pluginFiles.forEach(function (filename) {
+        pluginFiles.forEach(function(filename) {
             var filePath = path.join(pluginFolder, filename);
-            if(fs.lstatSync(filePath).isDirectory()){
+            if (fs.lstatSync(filePath).isDirectory()) {
                 var pluginPath = path.join(filePath, "index.js");
-                if(fs.existsSync(pluginPath)){
+                if (fs.existsSync(pluginPath)) {
                     var Plugin = require(pluginPath);
                     var plugin = new Plugin();
                     plugin.init(filename);
-                    self.plugins[cat][filename]=plugin;
+                    self.plugins[cat][filename] = plugin;
                 }
             }
         });
@@ -204,60 +267,58 @@ module.exports = yeoman.Base.extend({
         //读取默认插件
         var defaultPluginPath = this.templatePath("../plugins");
         //读取path plugin
-        self._loadPlugins(defaultPluginPath,PLUGIN_PATH);
+        self._loadPlugins(defaultPluginPath, PLUGIN_PATH);
         //读取checker plugin
-        self._loadPlugins(defaultPluginPath,PLUGIN_CHECKER);
+        self._loadPlugins(defaultPluginPath, PLUGIN_CHECKER);
 
-        //读取项目插件
 
+        
+        emptyDir(self.ucDistPath);
+        var files = readAllUc(self.ucPath);
         //读取所有的uc文件
-        fs.readdir(self.ucPath, (err, files) => {
-            //缓存uc文件数据
-            var ucArray = [];
-            var fileNameArray = [];
-            files.forEach(file=>{
-                var uc = require(path.join(self.ucPath, file));
-                ucArray.push(uc);
-                fileNameArray.push(file);
-            });
-
-            //换成it数据
-            var itCache = {};
-            ucArray.forEach(function(ucData) {
-                if (ucData.children && _.isArray(ucData.children)) {
-                    self._iteratorUc(itCache, ucData.children);
-                }
-            });
-
-            //开始生产文件
-            ucArray.forEach(function(uc, index) {
-
-                if (uc.build === undefined || uc.build === true) {
-                    var handler = false;
-                    var handlerName = "";
-                    //判断handler是否开启，如果开启，生成handler文件
-                    if (uc.handler && uc.handler === true) {
-                        handler = true;
-                        handlerName = fileNameArray[index].replace("uc", "handler");
-                        var handlerPath = path.join(self.handlerPath, handlerName);
-                        fs.exists(handlerPath, function(exists) {
-                            if (!exists) {
-                              var handlerTpl = _.template(self.fs.read(path.join(self.tplPath, "handler.tpl.js")));
-                              self.fs.write(handlerPath, handlerTpl());
-                            }
-                        });
-                    }
-                    helper.checkUcFile(fileNameArray[index]);
-                    var fileContent = self._buildUc(itCache, uc);
-                    var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
-                    self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({ "body": fileContent,"handler":handler,"handlerName":handlerName }));
-
-                }
-            });
-
+        //缓存uc文件数据
+        var ucArray = [];
+        var fileNameArray = [];
+        files.forEach(file => {
+            var uc = require(file);
+            ucArray.push(uc);
+            var fileName = file.replace(self.ucPath, "");
+            fileNameArray.push(fileName);
         });
 
-        //this.log(this.destinationPath());
+        //换成it数据
+        var itCache = {};
+        ucArray.forEach(function(ucData) {
+            if (ucData.children && _.isArray(ucData.children)) {
+                self._iteratorUc(itCache, ucData.children);
+            }
+        });
+
+        //开始生产文件
+        ucArray.forEach(function(uc, index) {
+
+            if (uc.build === undefined || uc.build === true) {
+                var handler = false;
+                var handlerName = "";
+                //判断handler是否开启，如果开启，生成handler文件
+                if (uc.handler && uc.handler === true) {
+                    handler = true;
+                    handlerName = fileNameArray[index].replace("uc", "handler");
+                    var handlerPath = path.join(self.handlerPath, handlerName);
+                    fs.exists(handlerPath, function(exists) {
+                        if (!exists) {
+                            var handlerTpl = _.template(self.fs.read(path.join(self.tplPath, "handler.tpl.js")));
+                            self.fs.write(handlerPath, handlerTpl());
+                        }
+                    });
+                }
+                helper.checkUcFile(fileNameArray[index]);
+                var fileContent = self._buildUc(itCache, uc);
+                var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
+                self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({ "body": fileContent, "handler": handler, "handlerName": handlerName }));
+
+            }
+        });
     }
 
 });
