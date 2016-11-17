@@ -1,5 +1,6 @@
 'use strict';
 var _ = require('lodash');
+var should = require('should');
 var Plugin = module.exports = function(){
 
 };
@@ -16,5 +17,10 @@ Plugin.prototype.buildParams = function(config){
 Plugin.prototype.build = function(config){
     var compiled = _.template(this.getTemplate(config));
     return compiled(this.buildParams(config));
+};
+Plugin.prototype.checkConfig = function(config){
+    if (config.hasOwnProperty('sleep')) {
+        should(config.sleep).instanceOf(Number);
+    }
 };
 Plugin.extend = require('class-extend').extend;

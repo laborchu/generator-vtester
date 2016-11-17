@@ -7,6 +7,9 @@ var _ = require('lodash');
 var fs = require('fs');
 var helper = require('./helper');
 
+const PLUGIN_PATH = "path";
+const PLUGIN_CHECKER = "checker";
+
 var ItBuilder = function() {
     this.itContent = "return driver";
 };
@@ -71,10 +74,10 @@ module.exports = yeoman.Base.extend({
     _buildPath: function(index, paths, builder) {
         var self = this;
         var step = paths[index];
-        helper.checkPathConfig(step);
 
         var pathPlugin = self.plugins.path[step.type];
         if(pathPlugin){
+            pathPlugin.checkConfig(step);//检查配置
             builder.append(pathPlugin.build(step));
         }
 
@@ -92,9 +95,9 @@ module.exports = yeoman.Base.extend({
             var hasStop = false;
             Object.keys(step.checker).forEach(function(key) {
                 var checkData = step.checker[key];
-                helper.checkCheckerConfig(key,checkData);
                 var checkerPlugin = self.plugins.checker[key];
                 if(checkerPlugin){
+                    checkerPlugin.checkConfig(checkData);//检查配置
                     if (key == "stop") {
                         hasStop = true;
                         var stopBuilder = new ItBuilder();
@@ -200,9 +203,9 @@ module.exports = yeoman.Base.extend({
         //读取默认插件
         var defaultPluginPath = this.templatePath("../plugins");
         //读取path plugin
-        self._loadPlugins(defaultPluginPath,"path");
+        self._loadPlugins(defaultPluginPath,PLUGIN_PATH);
         //读取checker plugin
-        self._loadPlugins(defaultPluginPath,"checker");
+        self._loadPlugins(defaultPluginPath,PLUGIN_CHECKER);
 
         //读取项目插件
 

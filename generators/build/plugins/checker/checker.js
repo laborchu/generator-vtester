@@ -1,4 +1,7 @@
 'use strict';
 var Plugin = require('../plugin');
-module.exports = Plugin.extend({
+var Checker = module.exports = Plugin.extend({
 });
+Checker.prototype.checkConfig = function(config){
+	Checker.__super__.checkConfig(config);
+};
