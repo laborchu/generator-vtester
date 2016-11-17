@@ -77,7 +77,7 @@ module.exports = yeoman.Base.extend({
 
         var pathPlugin = self.plugins.path[step.type];
         if(pathPlugin){
-            pathPlugin.checkConfig(step);//检查配置
+            helper.checkPathConfig(pathPlugin,step);//检查配置
             builder.append(pathPlugin.build(step));
         }
 
@@ -97,7 +97,7 @@ module.exports = yeoman.Base.extend({
                 var checkData = step.checker[key];
                 var checkerPlugin = self.plugins.checker[key];
                 if(checkerPlugin){
-                    checkerPlugin.checkConfig(checkData);//检查配置
+                    helper.checkCheckerConfig(checkerPlugin,checkData);//检查配置
                     if (key == "stop") {
                         hasStop = true;
                         var stopBuilder = new ItBuilder();
@@ -121,8 +121,8 @@ module.exports = yeoman.Base.extend({
 
     },
 
-    _buildUc: function(itCache, uc) {
-        helper.checkUcConfig(uc);
+    _buildUc: function(itCache, uc,index) {
+        index = index || 0;
         var self = this;
         //处理前置uc
         var preTplStr = "";
@@ -135,6 +135,7 @@ module.exports = yeoman.Base.extend({
                 preTplStr = self._buildUc(itCache, itCache[uc.preUc]);
             }
         }
+        helper.checkUcConfig(uc,index);
         //处理uc
         var params = { "title": uc.title };
         var readmeTpl;
@@ -166,8 +167,8 @@ module.exports = yeoman.Base.extend({
             if(prePath){
                 content = prePath;
             }
-            uc.children.forEach(child => {
-                var it = self._buildUc(itCache, child);
+            uc.children.forEach((child) => {
+                var it = self._buildUc(itCache, child,index+1);
                 content = content.concat(it);
             });
             params.body = content;
@@ -246,7 +247,7 @@ module.exports = yeoman.Base.extend({
                             }
                         });
                     }
-
+                    helper.checkUcFile(fileNameArray[index]);
                     var fileContent = self._buildUc(itCache, uc);
                     var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
                     self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({ "body": fileContent,"handler":handler,"handlerName":handlerName }));
