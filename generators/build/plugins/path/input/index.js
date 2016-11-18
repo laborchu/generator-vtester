@@ -5,11 +5,15 @@ var InputPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
 		if (config.selector == "name") {
 			return '.elementByName("<%= name %>").clear().sendKeys("<%= value %>")';
+		}else if(config.selector == "xpath"){
+			return '.elementByXPathOrNull("<%= xpath %>").clear().sendKeys("<%= value %>")';
 		}
 	},
 	buildParams:function(config){
 		if (config.selector == "name") {
 			return { 'name': config.element, 'value': config.value };
+		}else if(config.selector == "xpath"){
+			return { 'xpath': config.element, 'value': config.value };
 		}
 	},
     checkConfig : function(config){
