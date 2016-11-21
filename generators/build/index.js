@@ -1,95 +1,65 @@
 "use strict";
-var yeoman = require('yeoman-generator');
-var chalk = require('chalk');
-var yosay = require('yosay');
-var path = require('path');
-var _ = require('lodash');
-var fs = require('fs');
-var helper = require('./helper');
+let yeoman = require('yeoman-generator');
+let chalk = require('chalk');
+let yosay = require('yosay');
+let path = require('path');
+let _ = require('lodash');
+let fs = require('fs');
+let helper = require('./helper');
 
 const PLUGIN_PATH = "path";
 const PLUGIN_CHECKER = "checker";
+const UC_FILE_SUFFIX = '.uc.js';
 
-var ItBuilder = function() {
-    this.itContent = "return driver";
-};
-
-ItBuilder.prototype.sleep = function(time) {
-    var compiled = _.template(".sleep(<%= time %>)");
-    this.itContent = this.itContent.concat(compiled({ 'time': time }));
-    return this;
-};
-ItBuilder.prototype.append = function(content) {
-    this.itContent = this.itContent.concat(content);
-    return this;
-};
-ItBuilder.prototype.toString = function() {
-    return this.itContent + ";";
-};
-
-/**
- * 控制流/同步
- * @param {Array} arr
- * @param {Function} callback1 传递两个参数 (item,next)，执行完一项则需执行next()才能执行下一项
- * @param {Function} callback2 出错或执行完时回调
- * @returns {*}
- */
-function async(arr, callback1, callback2) {
-    if (Object.prototype.toString.call(arr) !== '[object Array]') {
-        return callback2(new Error('第一个参数必须为数组'));
+class UcBuilder {
+    constructor() {
+        this.itContent = "return driver";
     }
-    if (arr.length === 0)
-        return callback2(null);
-    (function walk(i) {
-        if (i >= arr.length) {
-            return callback2(null);
-        }
-        callback1(arr[i], function() {
-            walk(++i);
-        });
-    })(0);
+    sleep(time) {
+        this.itContent = this.itContent.concat(`.sleep(${time})`);
+        return this;
+    }
+    append(content) {
+        this.itContent = this.itContent.concat(content);
+        return this;
+    }
+    toString() {
+        return this.itContent + ";";
+    }
 }
 
-var emptyDir = function(fileUrl) {
-    var files = fs.readdirSync(fileUrl); //读取该文件夹
-    files.forEach(function(file) {
-        var stats = fs.statSync(fileUrl + '/' + file);
+let emptyDir = function(fileUrl) {
+    let files = fs.readdirSync(fileUrl); //读取该文件夹
+    files.forEach(file => {
+        let fullPath = path.join(fileUrl, file);
+        let stats = fs.statSync(fullPath);
         if (stats.isDirectory()) {
-            emptyDir(fileUrl + '/' + file);
+            emptyDir(fullPath);
+            fs.rmdir(fullPath);
         } else {
-            fs.unlinkSync(fileUrl + '/' + file);
+            fs.unlinkSync(fullPath);
         }
     });
 };
 
-var readAllUc = function(dir, callback) {
-            var filesArr = [];
-            dir = (function dir(dirpath, fn) {
-                var files = fs.readdirSync(dirpath);
-                async(files, function(item, next) {
-                    var info = fs.statSync(dirpath + item);
-                    if (info.isDirectory()) {
-                        dir(dirpath + item + '/', function() {
-                            next();
-                        });
-                    } else {
-                        if (item.endsWith('.uc.js')) {
-                            filesArr.push(dirpath + item);
-                        }
-                        if (callback) {
-                            callback(dirpath + item);
-                        }
-                        next();
-                    }
-                }, function(err) {
-                    if (!err && fn) {
-                        fn();
-                    }
-                });
-            })(dir);
-            return filesArr;
-        };
-
+let readAllUc = function(dir) {
+    var filesArr = [];
+    (function readDir(dirpath) {
+        var files = fs.readdirSync(dirpath);
+        files.forEach(file => {
+            let fullPath = path.join(dirpath, file);
+            var info = fs.statSync(fullPath);
+            if (info.isDirectory()) {
+                readDir(fullPath);
+            } else {
+                if (file.endsWith(UC_FILE_SUFFIX)) {
+                    filesArr.push(fullPath);
+                }
+            }
+        });
+    })(dir);
+    return filesArr;
+};
 
 module.exports = yeoman.Base.extend({
 
@@ -123,13 +93,12 @@ module.exports = yeoman.Base.extend({
     },
 
     _iteratorUc: function(itCache, children) {
-        var self = this;
         children.forEach(child => {
             if (child.ucKey) {
                 itCache[child.ucKey] = child;
             }
             if (child.children && _.isArray(child.children)) {
-                self._iteratorUc(itCache, child.children);
+                this._iteratorUc(itCache, child.children);
             }
         });
     },
@@ -163,7 +132,7 @@ module.exports = yeoman.Base.extend({
                     helper.checkCheckerConfig(checkerPlugin, checkData); //检查配置
                     if (key == "stop") {
                         hasStop = true;
-                        var stopBuilder = new ItBuilder();
+                        var stopBuilder = new UcBuilder();
                         goNext(stopBuilder);
                         var config = _.extend({ body: stopBuilder.toString() }, checkData);
                         builder.append(checkerPlugin.build(config));
@@ -205,7 +174,7 @@ module.exports = yeoman.Base.extend({
         var prePath = "";
         //判断uc是否存在path
         if (uc.paths && _.isArray(uc.paths)) {
-            var builder = new ItBuilder();
+            var builder = new UcBuilder();
             self._buildPath(0, uc.paths, builder);
             if (uc.sleep && uc.sleep > 0) {
                 builder.sleep(uc.sleep);
@@ -271,8 +240,6 @@ module.exports = yeoman.Base.extend({
         //读取checker plugin
         self._loadPlugins(defaultPluginPath, PLUGIN_CHECKER);
 
-
-        
         emptyDir(self.ucDistPath);
         var files = readAllUc(self.ucPath);
         //读取所有的uc文件
@@ -287,7 +254,7 @@ module.exports = yeoman.Base.extend({
         });
 
         //换成it数据
-        var itCache = {};
+        var itCache = new Map();
         ucArray.forEach(function(ucData) {
             if (ucData.children && _.isArray(ucData.children)) {
                 self._iteratorUc(itCache, ucData.children);
