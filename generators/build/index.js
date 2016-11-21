@@ -76,20 +76,20 @@ module.exports = yeoman.Base.extend({
     },
 
     defaults: function() {
-        if (this.options.projectPath) {
-            this.projectPath = this.options.projectPath;
-            this.tplPath = this.projectPath + "/src/tpl/";
-        } else {
-            this.projectPath = this.destinationPath();
-            this.tplPath = this.templatePath;
-        }
-        this.ucPath = this.projectPath + "/src/uc/";
-        this.ucDistPath = this.projectPath + "/src/dist/";
-        this.handlerPath = this.projectPath + "/src/handler/";
-        this.plugins = {
-            path: {},
-            checker: {}
-        };
+      if (this.options.projectPath) {
+        this.projectPath = path.join(this.options.projectPath);
+        this.tplPath = path.join(this.projectPath , "/src/tpl/");
+      } else {
+        this.projectPath = this.destinationPath();
+        this.tplPath = this.templatePath;
+      }
+      this.ucPath = path.join(this.projectPath , "/src/uc/") ;
+      this.ucDistPath = path.join(this.projectPath , "/src/dist/") ;
+      this.handlerPath = path.join(this.projectPath , "/src/handler/") ;
+      this.plugins = {
+        path: {},
+        checker: {}
+      };
     },
 
     _iteratorUc: function(itCache, children) {
