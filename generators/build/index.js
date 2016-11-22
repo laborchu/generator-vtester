@@ -106,11 +106,12 @@ module.exports = yeoman.Base.extend({
     _buildPath: function(index, paths, builder) {
         var self = this;
         var step = paths[index];
-
-        var pathPlugin = self.plugins.path[step.type];
-        if (pathPlugin) {
-            helper.checkPathConfig(pathPlugin, step); //检查配置
-            builder.append(pathPlugin.build(step));
+        if(step.type){
+            var pathPlugin = self.plugins.path[step.type];
+            if (pathPlugin) {
+                helper.checkPathConfig(pathPlugin, step); //检查配置
+                builder.append(pathPlugin.build(step));
+            }
         }
 
         if (step.sleep && step.sleep > 0) {
