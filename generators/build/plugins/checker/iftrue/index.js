@@ -1,7 +1,7 @@
 'use strict';
 var Checker = require('../checker');
 var should = require('should');
-var StopPlugin = module.exports = Checker.extend({
+var IfTruePlugin = module.exports = Checker.extend({
 	getTemplate:function(config){
 		if (config.selector == "xpath") {
             return '.elementByXPathOrNull("<%= xpath %>")\
@@ -13,11 +13,11 @@ var StopPlugin = module.exports = Checker.extend({
         }
 	},
 	buildParams:function(config){
-		var textTpl = ".text()";
+        var textTpl = ".text()";
         if(config.value===null){
             textTpl = "";
         }
-        if (config.selector == "xpath") {
+		if (config.selector == "xpath") {
             return { 'xpath': config.element, 'value': config.value, 'body': config.body,'textTpl':textTpl };
         }
 	},
@@ -25,6 +25,7 @@ var StopPlugin = module.exports = Checker.extend({
         config.should.have.property('selector').instanceOf(String).ok();
         config.should.have.property('element').instanceOf(String).ok();
         config.should.have.property('value');
-        StopPlugin.__super__.checkConfig(config);
+        config.should.have.property('paths').instanceOf(Array).and.not.empty();
+        IfTruePlugin.__super__.checkConfig(config);
     }
 });

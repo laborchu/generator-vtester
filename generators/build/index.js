@@ -133,11 +133,16 @@ module.exports = yeoman.Base.extend({
                     helper.checkCheckerConfig(checkerPlugin, checkData); //检查配置
                     if (key == "stop") {
                         hasStop = true;
-                        var stopBuilder = new UcBuilder();
+                        let stopBuilder = new UcBuilder();
                         goNext(stopBuilder);
-                        var config = _.extend({ body: stopBuilder.toString() }, checkData);
+                        let config = _.extend({ body: stopBuilder.toString() }, checkData);
                         builder.append(checkerPlugin.build(config));
-                    } else {
+                    } else if(key == "iftrue"){
+                        let iftrueBuilder = new UcBuilder();
+                        self._buildPath(0, checkData.paths, iftrueBuilder);
+                        let config = _.extend({ body: iftrueBuilder.toString() }, checkData);
+                        builder.append(checkerPlugin.build(config));
+                    }else {
                         builder.append(checkerPlugin.build(checkData));
                     }
                 }
