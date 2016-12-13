@@ -1,3 +1,4 @@
+require('should');
 <%if(handler){%>
   var handler = require("../handler/<%=handlerName%>")
 <%}%>
