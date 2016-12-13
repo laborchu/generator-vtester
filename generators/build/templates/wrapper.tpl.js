@@ -1,6 +1,6 @@
 require('should');
 <%if(handler){%>
-  var handler = require("../handler/<%=handlerName%>")
+  var handler = require("<%=relativePath%>handler/<%=handlerName%>")
 <%}%>
 var wd = require('webdriver-client')({
   platformName: 'desktop',
