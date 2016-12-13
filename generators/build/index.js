@@ -277,6 +277,7 @@ module.exports = yeoman.Base.extend({
                 if (uc.handler && uc.handler === true) {
                     handler = true;
                     handlerName = fileNameArray[index].replace("uc", "handler");
+                    handlerName = handlerName.replace( /\\/g,"/");
                     var handlerPath = path.join(self.handlerPath, handlerName);
                     fs.exists(handlerPath, function(exists) {
                         if (!exists) {
