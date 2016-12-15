@@ -15,20 +15,23 @@ class UcBuilder {
     constructor() {
         this.itContent = "return driver";
     }
+
     sleep(time) {
         this.itContent = this.itContent.concat(`.sleep(${time})`);
         return this;
     }
+
     append(content) {
         this.itContent = this.itContent.concat(content);
         return this;
     }
+
     toString() {
         return this.itContent + ";";
     }
 }
 
-let emptyDir = function(fileUrl) {
+let emptyDir = function (fileUrl) {
     let files = fs.readdirSync(fileUrl); //读取该文件夹
     files.forEach(file => {
         let fullPath = path.join(fileUrl, file);
@@ -42,7 +45,7 @@ let emptyDir = function(fileUrl) {
     });
 };
 
-let readAllUc = function(dir) {
+let readAllUc = function (dir) {
     var filesArr = [];
     (function readDir(dirpath) {
         var files = fs.readdirSync(dirpath);
@@ -63,36 +66,37 @@ let readAllUc = function(dir) {
 
 module.exports = yeoman.Base.extend({
 
-    prompting: function() {
+    prompting: function () {
         // Have Yeoman greet the user.
         this.log(yosay(
             'Welcome to the praiseworthy ' + chalk.red('generator-vtester') + ' generator!'
         ));
         //设置交互信息
         var prompts = [];
-        return this.prompt(prompts).then(function(props) {
+        return this.prompt(prompts).then(function (props) {
             this.props = props;
         }.bind(this));
     },
 
-    defaults: function() {
-      if (this.options.projectPath) {
-        this.projectPath = path.join(this.options.projectPath);
-        this.tplPath = path.join(this.projectPath , "/src/tpl/");
-      } else {
-        this.projectPath = this.destinationPath();
-        this.tplPath = this.templatePath;
-      }
-      this.ucPath = path.join(this.projectPath , "/src/uc/") ;
-      this.ucDistPath = path.join(this.projectPath , "/src/dist/") ;
-      this.handlerPath = path.join(this.projectPath , "/src/handler/") ;
-      this.plugins = {
-        path: {},
-        checker: {}
-      };
+    defaults: function () {
+        if (this.options.projectPath) {
+            this.projectPath = path.join(this.options.projectPath);
+            this.tplPath = path.join(this.projectPath, "/src/tpl/");
+        } else {
+            this.projectPath = this.destinationPath();
+            this.tplPath = this.templatePath;
+        }
+        this.vtestConfig = require(path.join(this.projectPath, "vtester.json"));
+        this.ucPath = path.join(this.projectPath, "/src/uc/");
+        this.ucDistPath = path.join(this.projectPath, "/src/dist/");
+        this.handlerPath = path.join(this.projectPath, "/src/handler/");
+        this.plugins = {
+            path: {},
+            checker: {}
+        };
     },
 
-    _iteratorUc: function(itCache, children) {
+    _iteratorUc: function (itCache, children) {
         children.forEach(child => {
             if (child.ucKey) {
                 itCache[child.ucKey] = child;
@@ -103,10 +107,10 @@ module.exports = yeoman.Base.extend({
         });
     },
 
-    _buildPath: function(index, paths, builder) {
+    _buildPath: function (index, paths, builder) {
         var self = this;
         var step = paths[index];
-        if(step.type){
+        if (step.type) {
             var pathPlugin = self.plugins.path[step.type];
             if (pathPlugin) {
                 helper.checkPathConfig(pathPlugin, step); //检查配置
@@ -118,7 +122,7 @@ module.exports = yeoman.Base.extend({
             builder.sleep(step.sleep);
         }
 
-        var goNext = function(targetBuilder) {
+        var goNext = function (targetBuilder) {
             if (paths.length > (index + 1)) {
                 self._buildPath(index + 1, paths, targetBuilder);
             }
@@ -126,7 +130,7 @@ module.exports = yeoman.Base.extend({
 
         if (step.checker) {
             var hasStop = false;
-            Object.keys(step.checker).forEach(function(key) {
+            Object.keys(step.checker).forEach(function (key) {
                 var checkData = step.checker[key];
                 var checkerPlugin = self.plugins.checker[key];
                 if (checkerPlugin) {
@@ -135,14 +139,14 @@ module.exports = yeoman.Base.extend({
                         hasStop = true;
                         let stopBuilder = new UcBuilder();
                         goNext(stopBuilder);
-                        let config = _.extend({ body: stopBuilder.toString() }, checkData);
+                        let config = _.extend({body: stopBuilder.toString()}, checkData);
                         builder.append(checkerPlugin.build(config));
-                    } else if(key == "iftrue"){
+                    } else if (key == "iftrue") {
                         let iftrueBuilder = new UcBuilder();
                         self._buildPath(0, checkData.paths, iftrueBuilder);
-                        let config = _.extend({ body: iftrueBuilder.toString() }, checkData);
+                        let config = _.extend({body: iftrueBuilder.toString()}, checkData);
                         builder.append(checkerPlugin.build(config));
-                    }else {
+                    } else {
                         builder.append(checkerPlugin.build(checkData));
                     }
                 }
@@ -159,7 +163,7 @@ module.exports = yeoman.Base.extend({
 
     },
 
-    _buildUc: function(itCache, uc, index) {
+    _buildUc: function (itCache, uc, index) {
         index = index || 0;
         var self = this;
         //处理前置uc
@@ -175,7 +179,7 @@ module.exports = yeoman.Base.extend({
         }
         helper.checkUcConfig(uc, index);
         //处理uc
-        var params = { "title": uc.title };
+        var params = {"title": uc.title};
         var readmeTpl;
         var prePath = "";
         //判断uc是否存在path
@@ -218,11 +222,11 @@ module.exports = yeoman.Base.extend({
         return preTplStr;
     },
 
-    _loadPlugins: function(rootPath, cat) {
+    _loadPlugins: function (rootPath, cat) {
         var self = this;
         var pluginFolder = path.join(rootPath, cat);
         var pluginFiles = fs.readdirSync(pluginFolder);
-        pluginFiles.forEach(function(filename) {
+        pluginFiles.forEach(function (filename) {
             var filePath = path.join(pluginFolder, filename);
             if (fs.lstatSync(filePath).isDirectory()) {
                 var pluginPath = path.join(filePath, "index.js");
@@ -236,7 +240,7 @@ module.exports = yeoman.Base.extend({
         });
     },
 
-    writing: function() {
+    writing: function () {
         var self = this;
 
         //读取默认插件
@@ -261,14 +265,14 @@ module.exports = yeoman.Base.extend({
 
         //换成it数据
         var itCache = new Map();
-        ucArray.forEach(function(ucData) {
+        ucArray.forEach(function (ucData) {
             if (ucData.children && _.isArray(ucData.children)) {
                 self._iteratorUc(itCache, ucData.children);
             }
         });
 
         //开始生产文件
-        ucArray.forEach(function(uc, index) {
+        ucArray.forEach(function (uc, index) {
 
             if (uc.build === undefined || uc.build === true) {
                 var handler = false;
@@ -278,7 +282,7 @@ module.exports = yeoman.Base.extend({
                     handler = true;
                     handlerName = fileNameArray[index].replace("uc", "handler");
                     var handlerPath = path.join(self.handlerPath, handlerName);
-                    fs.exists(handlerPath, function(exists) {
+                    fs.exists(handlerPath, function (exists) {
                         if (!exists) {
                             var handlerTpl = _.template(self.fs.read(path.join(self.tplPath, "handler.tpl.js")));
                             self.fs.write(handlerPath, handlerTpl());
@@ -288,7 +292,12 @@ module.exports = yeoman.Base.extend({
                 helper.checkUcFile(fileNameArray[index]);
                 var fileContent = self._buildUc(itCache, uc);
                 var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
-                self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({ "body": fileContent, "handler": handler, "handlerName": handlerName }));
+                self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({
+                    "body": fileContent,
+                    "handler": handler,
+                    "vtestConfig": self.vtestConfig,
+                    "handlerName": handlerName
+                }));
 
             }
         });

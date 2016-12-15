@@ -1,26 +1,54 @@
-<%if(handler){%>
-  var handler = require("../handler/<%=handlerName%>")
+<%if (handler) {%>
+    var handler = require("../handler/<%=handlerName%>")
+        <%}%>
+
+<%if (vtestConfig.platform == 'electron') {%>
+    var wd = require('webdriver-client')({
+        platformName: 'desktop',
+        browserName: 'electron'
+    });
+
+<%} else if (vtestConfig.platform == 'android') {%>
+    var wd = require('webdriver-client')({
+        platformName: 'Android',
+        package: '<%= vtestConfig.package%>',
+        activity: '<%= vtestConfig.activity%>',
+        udid: "<%= vtestConfig.udid%>"
+    });
+    wd.addPromiseChainMethod('customback', function () {
+        if (platform === 'ios') {
+            return this;
+        }
+        return this.back();
+    });
 <%}%>
-var wd = require('webdriver-client')({
-  platformName: 'desktop',
-  browserName: 'electron'
-});
 
 
-describe('自动化测试', function() {
-  this.timeout(5 * 60 * 1000);
-  const driver = wd.initPromiseChain();
-  before(() => {
-    return driver
-      .initDriver()
-      .maximize()
-      .setWindowSize(1280, 800);
-  });
+describe('自动化测试', function () {
+    this.timeout(5 * 60 * 1000);
+    const driver = wd.initPromiseChain();
 
-  <%= body%>
+    <%if (vtestConfig.platform == 'electron') {%>
+        before(() => {
+            return driver
+                .initDriver()
+                .maximize()
+                .setWindowSize(1280, 800);
+        });
+    <%} else if (vtestConfig.platform == 'android') {%>
+        driver.configureHttp({
+            timeout: 600000
+        });
 
-  after((done) => {
-    return driver
-      .quit(done);
-  });
+        before(() => {
+            return driver.initDriver();
+        });
+    <%}%>
+
+    <%= body %>
+        after((done) => {
+            return driver
+                .sleep(1000)
+                .quit(done);
+        });
 });
