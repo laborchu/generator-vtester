@@ -8,11 +8,22 @@ var EqPlugin = module.exports = Checker.extend({
             .then(function(element) {\
             	"<%= value %>".should.equal(element);\
             })';
+        }else if(config.selector == "id") {
+            if(config.vtestConfig.platform==="android"){
+                return '.eqRawtext("<%= id %>","<%= value %>")';
+            }
+            
         }
 	},
 	buildParams:function(config){
 		if (config.selector == "xpath") {
             return { 'xpath': config.element, 'value': config.value};
+        } else if (config.selector == "id") {
+            if(config.vtestConfig.platform==="android"){
+                return { 'id': this.getAndroidResId(config,config.element), 'value': config.value};
+            }else{
+                return { 'id': config.element, 'value': config.value};
+            }
         }
 	},
     checkConfig : function(config){

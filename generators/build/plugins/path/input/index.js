@@ -7,20 +7,31 @@ var InputPlugin = module.exports = Path.extend({
 			return '.elementByName("<%= name %>").clear().sendKeys("<%= value %>")';
 		}else if(config.selector == "xpath"){
 			return '.elementByXPathOrNull("<%= xpath %>").clear().sendKeys("<%= value %>")';
-		}
+		}else if(config.selector == "id") {
+            if(config.vtestConfig.platform==="android"){
+                return '.elementById("<%= id %>").clear().sendKeys("<%= value %>")';
+            }
+        }
 	},
 	buildParams:function(config){
 		if (config.selector == "name") {
 			return { 'name': config.element, 'value': config.value };
 		}else if(config.selector == "xpath"){
 			return { 'xpath': config.element, 'value': config.value };
+		}else if(config.selector == "id"){
+			 if(config.vtestConfig.platform==="android"){
+                return { 'id': this.getAndroidResId(config,config.element), 'value': config.value};
+            }else{
+                return { 'id': config.element, 'value': config.value};
+            }
 		}
 	},
     checkConfig : function(config){
         config.should.have.property('selector').instanceOf(String).ok();
         config.should.have.property('element').instanceOf(String).ok();
-        if (config.selector !== 'xpath' && config.selector !== 'name' && config.selector !== 'className') {
-            throw new Error('path.selector should in (xpath|name|className)');
+        if (config.selector !== 'xpath' && config.selector !== 'name' 
+        	&& config.selector !== 'className' && config.selector !== 'id') {
+            throw new Error('path.selector should in (xpath|name|className|id)');
         }
         config.should.have.property('value').instanceOf(String);
         InputPlugin.__super__.checkConfig(config);

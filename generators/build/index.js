@@ -94,6 +94,22 @@ module.exports = yeoman.Base.extend({
             path: {},
             checker: {}
         };
+        var pageMapPath = path.join(this.projectPath, "/src/page.map.js");
+        if (fs.existsSync(pageMapPath)) {
+            this.pageArray = require(pageMapPath);
+            this.pageMap = new Map();
+            var self = this;
+            let itePageMap = function(pageArray){
+                pageArray.forEach(function(page){
+                    self.pageMap[page.ucKey] = true;
+                    if(page.children){
+                        itePageMap(page.children);
+                    }
+                });
+            };
+            itePageMap(self.pageArray);
+
+        }
     },
 
     _iteratorUc: function (itCache, children) {
@@ -114,7 +130,7 @@ module.exports = yeoman.Base.extend({
             var pathPlugin = self.plugins.path[step.type];
             if (pathPlugin) {
                 helper.checkPathConfig(pathPlugin, step); //检查配置
-                let config = _.extend(step, self.vtestConfig);
+                let config = _.extend(step, {vtestConfig:self.vtestConfig});
                 builder.append(pathPlugin.build(config));
             }
         }
@@ -140,15 +156,15 @@ module.exports = yeoman.Base.extend({
                         hasStop = true;
                         let stopBuilder = new UcBuilder();
                         goNext(stopBuilder);
-                        let config = _.extend({body: stopBuilder.toString()}, checkData,self.vtestConfig);
+                        let config = _.extend({body: stopBuilder.toString()}, checkData,{vtestConfig:self.vtestConfig});
                         builder.append(checkerPlugin.build(config));
                     } else if (key == "iftrue") {
                         let iftrueBuilder = new UcBuilder();
                         self._buildPath(0, checkData.paths, iftrueBuilder);
-                        let config = _.extend({body: iftrueBuilder.toString()}, checkData,self.vtestConfig);
+                        let config = _.extend({body: iftrueBuilder.toString()}, checkData,{vtestConfig:self.vtestConfig});
                         builder.append(checkerPlugin.build(config));
                     } else {
-                        let config = _.extend(checkData,self.vtestConfig);
+                        let config = _.extend(checkData,{vtestConfig:self.vtestConfig});
                         builder.append(checkerPlugin.build(config));
                     }
                 }
@@ -181,7 +197,7 @@ module.exports = yeoman.Base.extend({
         }
         helper.checkUcConfig(uc, index);
         //处理uc
-        var params = {"title": uc.title};
+        var params = {"title": uc.title,"ucKey":uc.ucKey};
         var readmeTpl;
         var prePath = "";
         //判断uc是否存在path
@@ -216,6 +232,11 @@ module.exports = yeoman.Base.extend({
                 content = content.concat(it);
             });
             params.body = content;
+            if(self.pageMap&&self.pageMap[uc.ucKey]){
+                params.isTopUc = true;
+            }else{
+                params.isTopUc = true;
+            }
             readmeTpl = _.template(this.fs.read(path.join(self.tplPath, "describe.tpl.js")));
             var describeStr = readmeTpl(params);
             preTplStr = preTplStr.concat(describeStr);
@@ -272,7 +293,7 @@ module.exports = yeoman.Base.extend({
                 self._iteratorUc(itCache, ucData.children);
             }
         });
-
+        let ucContentMap = new Map();
         //开始生产文件
         ucArray.forEach(function(uc, index) {
             var relativePath="../";
@@ -293,25 +314,51 @@ module.exports = yeoman.Base.extend({
                         relativePath='../'+relativePath;
                       }
                     }
-                    fs.exists(handlerPath, function(exists) {
+                    fs.existsSync(handlerPath, function(exists) {
                         if (!exists) {
                             var handlerTpl = _.template(self.fs.read(path.join(self.tplPath, "handler.tpl.js")));
                             self.fs.write(handlerPath, handlerTpl());
                         }
                     });
                 }
-                helper.checkUcFile(fileNameArray[index]);
                 var fileContent = self._buildUc(itCache, uc);
-                var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
-                self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({
-                    "body": fileContent,
-                    "handler": handler,
-                    "vtestConfig": self.vtestConfig,
-                    "handlerName": handlerName,
-                    "relativePath":relativePath
-                }));
+                if(self.pageMap){
+                    ucContentMap[uc.ucKey] = fileContent;
+                }else{
+                    helper.checkUcFile(fileNameArray[index]);
+                    var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
+                    self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({
+                        "body": fileContent,
+                        "handler": handler,
+                        "vtestConfig": self.vtestConfig,
+                        "handlerName": handlerName,
+                        "relativePath":relativePath
+                    }));
+                }
             }
         });
+
+        if(self.pageArray){
+            var fileContent = "";
+            let itePageMap = function(pageArray){
+                pageArray.forEach(function(page){
+                    if(ucContentMap[page.ucKey]){
+                        fileContent+=ucContentMap[page.ucKey];
+                    }
+                    if(page.children){
+                        itePageMap(page.children);
+                    }
+                });
+            };
+            itePageMap(self.pageArray);
+            var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
+            self.fs.write(path.join(self.ucDistPath, "all.uc.js"), wrapperTpl({
+                "body": fileContent,
+                "handler":null,
+                "relativePath":"../",
+                "vtestConfig": self.vtestConfig
+            }));
+        }
     }
 
 });

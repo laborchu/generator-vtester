@@ -1,7 +1,10 @@
 require('should');
+let fs = require('fs');
+let path = require('path');
+
 <%if (handler) {%>
   var handler = require("<%=relativePath%>handler/<%=handlerName%>")
-        <%}%>
+<%}%>
 
 <%if (vtestConfig.platform == 'electron') {%>
     var wd = require('webdriver-client')({
@@ -12,18 +15,21 @@ require('should');
 <%} else if (vtestConfig.platform == 'android') {%>
     var wd = require('webdriver-client')({
         platformName: 'Android',
+        reuse:3,
         package: '<%= vtestConfig.package%>',
         activity: '<%= vtestConfig.activity%>',
         udid: "<%= vtestConfig.udid%>"
     });
-    wd.addPromiseChainMethod('customback', function () {
-        if (platform === 'ios') {
-            return this;
-        }
-        return this.back();
-    });
+    require("<%=relativePath%>wd.macaca.js")(wd,"<%=vtestConfig.platform%>");
 <%}%>
 
+let describeStart = function(ucKey){
+    fs.writeFile("data.log",ucKey);
+};
+let preLastUcKey = null;
+if (fs.existsSync("data.log")) {
+    preLastUcKey = fs.readFileSync("data.log", 'utf8');
+}
 
 describe('自动化测试', function () {
     this.timeout(5 * 60 * 1000);
@@ -33,8 +39,7 @@ describe('自动化测试', function () {
         before(() => {
             return driver
                 .initDriver()
-                .maximize()
-                .setWindowSize(1280, 800);
+                .maximize();
         });
     <%} else if (vtestConfig.platform == 'android') {%>
         driver.configureHttp({

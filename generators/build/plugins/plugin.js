@@ -23,4 +23,12 @@ Plugin.prototype.checkConfig = function(config){
         should(config.sleep).instanceOf(Number);
     }
 };
+Plugin.prototype.getAndroidResId = function(config,resId){
+	if(resId.startsWith("android:id/")){
+		return resId;
+	}else{
+		return `${config.vtestConfig.package}:id/${resId}`;
+	}
+    
+};
 Plugin.extend = require('class-extend').extend;

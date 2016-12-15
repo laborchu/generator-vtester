@@ -79,7 +79,7 @@ module.exports = {
 					*title:'标题',
 					*type:'url|click|input',
 					url:'当type=url时必填',
-					selector:'xpath|name|className',
+					selector:'xpath|name|className|id',
 					element:'selector值',
 					value:'type=input的值'
 					sleep:'停留时间',
