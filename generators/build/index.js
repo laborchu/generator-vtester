@@ -114,7 +114,8 @@ module.exports = yeoman.Base.extend({
             var pathPlugin = self.plugins.path[step.type];
             if (pathPlugin) {
                 helper.checkPathConfig(pathPlugin, step); //检查配置
-                builder.append(pathPlugin.build(step));
+                let config = _.extend(step, self.vtestConfig);
+                builder.append(pathPlugin.build(config));
             }
         }
 
@@ -139,15 +140,16 @@ module.exports = yeoman.Base.extend({
                         hasStop = true;
                         let stopBuilder = new UcBuilder();
                         goNext(stopBuilder);
-                        let config = _.extend({body: stopBuilder.toString()}, checkData);
+                        let config = _.extend({body: stopBuilder.toString()}, checkData,self.vtestConfig);
                         builder.append(checkerPlugin.build(config));
                     } else if (key == "iftrue") {
                         let iftrueBuilder = new UcBuilder();
                         self._buildPath(0, checkData.paths, iftrueBuilder);
-                        let config = _.extend({body: iftrueBuilder.toString()}, checkData);
+                        let config = _.extend({body: iftrueBuilder.toString()}, checkData,self.vtestConfig);
                         builder.append(checkerPlugin.build(config));
                     } else {
-                        builder.append(checkerPlugin.build(checkData));
+                        let config = _.extend(checkData,self.vtestConfig);
+                        builder.append(checkerPlugin.build(config));
                     }
                 }
                 if (checkData.sleep && checkData.sleep > 0) {
@@ -272,13 +274,8 @@ module.exports = yeoman.Base.extend({
         });
 
         //开始生产文件
-<<<<<<< HEAD
-        ucArray.forEach(function (uc, index) {
-
-=======
         ucArray.forEach(function(uc, index) {
             var relativePath="../";
->>>>>>> 445c6a648a702527d4522e0f030cdfa3d5ad54af
             if (uc.build === undefined || uc.build === true) {
                 var handler = false;
                 var handlerName = "";
@@ -290,18 +287,13 @@ module.exports = yeoman.Base.extend({
                     var arr = handlerName.match(new RegExp('\\\\',"g"));
                     handlerName = handlerName.replace( /\\/g,"/");
                     var handlerPath = path.join(self.handlerPath, handlerName);
-<<<<<<< HEAD
-                    fs.exists(handlerPath, function (exists) {
-=======
                      //出现一个反斜杠 前面 追加一个../
                     if(arr&&arr.length>0){
-                      console.log(handlerName+"            "+arr.length);
                       for(var i=0;i<arr.length;i++){
                         relativePath='../'+relativePath;
                       }
                     }
                     fs.exists(handlerPath, function(exists) {
->>>>>>> 445c6a648a702527d4522e0f030cdfa3d5ad54af
                         if (!exists) {
                             var handlerTpl = _.template(self.fs.read(path.join(self.tplPath, "handler.tpl.js")));
                             self.fs.write(handlerPath, handlerTpl());
@@ -311,17 +303,13 @@ module.exports = yeoman.Base.extend({
                 helper.checkUcFile(fileNameArray[index]);
                 var fileContent = self._buildUc(itCache, uc);
                 var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
-<<<<<<< HEAD
                 self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({
                     "body": fileContent,
                     "handler": handler,
                     "vtestConfig": self.vtestConfig,
-                    "handlerName": handlerName
+                    "handlerName": handlerName,
+                    "relativePath":relativePath
                 }));
-
-=======
-                self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({ "body": fileContent, "handler": handler, "handlerName": handlerName,"relativePath":relativePath}));
->>>>>>> 445c6a648a702527d4522e0f030cdfa3d5ad54af
             }
         });
     }
