@@ -20,7 +20,8 @@ let path = require('path');
         activity: '<%= vtestConfig.activity%>',
         udid: "<%= vtestConfig.udid%>"
     });
-    require("<%=relativePath%>wd.macaca.js")(wd,"<%=vtestConfig.platform%>");
+    require("./vtester.driver.js")(wd,"<%=vtestConfig.platform%>");
+    var router = require("<%=relativePath%>router.uc.js");
 <%}%>
 
 let describeStart = function(ucKey){
@@ -29,6 +30,9 @@ let describeStart = function(ucKey){
 let preLastUcKey = null;
 if (fs.existsSync("data.log")) {
     preLastUcKey = fs.readFileSync("data.log", 'utf8');
+    if(preLastUcKey.length==0){
+        preLastUcKey = null;
+    }
 }
 
 describe('自动化测试', function () {

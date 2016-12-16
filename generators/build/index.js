@@ -12,8 +12,8 @@ const PLUGIN_CHECKER = "checker";
 const UC_FILE_SUFFIX = '.uc.js';
 
 class UcBuilder {
-    constructor() {
-        this.itContent = "return driver";
+    constructor(itContent) {
+        this.itContent = itContent||"return driver";
     }
 
     sleep(time) {
@@ -87,6 +87,7 @@ module.exports = yeoman.Base.extend({
             this.tplPath = this.templatePath;
         }
         this.vtestConfig = require(path.join(this.projectPath, "vtester.json"));
+        this.srcPath = path.join(this.projectPath, "/src/");
         this.ucPath = path.join(this.projectPath, "/src/uc/");
         this.ucDistPath = path.join(this.projectPath, "/src/dist/");
         this.handlerPath = path.join(this.projectPath, "/src/handler/");
@@ -96,12 +97,14 @@ module.exports = yeoman.Base.extend({
         };
         var pageMapPath = path.join(this.projectPath, "/src/page.map.js");
         if (fs.existsSync(pageMapPath)) {
-            this.pageArray = require(pageMapPath);
+            let pageConfig = require(pageMapPath);
+            this.pageArray = pageConfig.pageTree;
+            this.pageLink = pageConfig.pageLink;
             this.pageMap = new Map();
             var self = this;
             let itePageMap = function(pageArray){
                 pageArray.forEach(function(page){
-                    self.pageMap[page.ucKey] = true;
+                    self.pageMap[page.ucKey] = page;
                     if(page.children){
                         itePageMap(page.children);
                     }
@@ -234,8 +237,9 @@ module.exports = yeoman.Base.extend({
             params.body = content;
             if(self.pageMap&&self.pageMap[uc.ucKey]){
                 params.isTopUc = true;
+                params.winName = self.pageMap[uc.ucKey].ucKey;
             }else{
-                params.isTopUc = true;
+                params.isTopUc = false;
             }
             readmeTpl = _.template(this.fs.read(path.join(self.tplPath, "describe.tpl.js")));
             var describeStr = readmeTpl(params);
@@ -243,6 +247,29 @@ module.exports = yeoman.Base.extend({
         }
         //console.log(tplStr)
         return preTplStr;
+    },
+
+    _buildDriver: function () {
+        var self = this;
+        var driverStr = "";
+        if(this.pageLink){
+            for (var key in this.pageLink) {
+                var link = this.pageLink[key];
+                if (link.paths && _.isArray(link.paths)) {
+                    var builder = new UcBuilder("return this");
+                    self._buildPath(0, link.paths, builder);
+                    if (link.sleep && link.sleep > 0) {
+                        builder.sleep(link.sleep);
+                    }
+                    let readmeTpl = _.template(this.fs.read(path.join(self.tplPath, "promise-chain-method.tpl.js")));
+                    driverStr += readmeTpl({
+                        name:key,
+                        body:builder.toString()
+                    });
+                }
+            }
+        }
+        return driverStr;
     },
 
     _loadPlugins: function (rootPath, cat) {
@@ -342,21 +369,36 @@ module.exports = yeoman.Base.extend({
             var fileContent = "";
             let itePageMap = function(pageArray){
                 pageArray.forEach(function(page){
-                    if(ucContentMap[page.ucKey]){
-                        fileContent+=ucContentMap[page.ucKey];
+                    if(!page.last){
+                        if(ucContentMap[page.ucKey]){
+                            fileContent+=ucContentMap[page.ucKey];
+                        }
                     }
                     if(page.children){
                         itePageMap(page.children);
                     }
+                    if(page.last){
+                        if(ucContentMap[page.ucKey]){
+                            fileContent+=ucContentMap[page.ucKey];
+                        }
+                    }
                 });
             };
             itePageMap(self.pageArray);
-            var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
+            let wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
             self.fs.write(path.join(self.ucDistPath, "all.uc.js"), wrapperTpl({
                 "body": fileContent,
                 "handler":null,
                 "relativePath":"../",
                 "vtestConfig": self.vtestConfig
+            }));
+        }
+        //处理driver扩展
+        let driverStr = self._buildDriver();
+        if(driverStr&&driverStr.length>0){
+            let driverTpl = _.template(self.fs.read(path.join(self.srcPath, "vtester.driver.js")));
+            self.fs.write(path.join(self.ucDistPath, "vtester.driver.js"), driverTpl({
+                "body": driverStr
             }));
         }
     }
