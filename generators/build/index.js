@@ -91,6 +91,7 @@ module.exports = yeoman.Base.extend({
         this.ucPath = path.join(this.projectPath, "/src/uc/");
         this.ucDistPath = path.join(this.projectPath, "/src/dist/");
         this.handlerPath = path.join(this.projectPath, "/src/handler/");
+        this.filterPath = path.join(this.projectPath, "/src/filter/");
         this.plugins = {
             path: {},
             checker: {}
@@ -213,7 +214,6 @@ module.exports = yeoman.Base.extend({
             params.body = builder.toString();
             if (uc.only && uc.only === true) {
                 params.only = true;
-                console.log("has only");
             } else {
                 params.only = false;
             }
@@ -240,6 +240,11 @@ module.exports = yeoman.Base.extend({
                 params.winName = self.pageMap[uc.ucKey].ucKey;
             }else{
                 params.isTopUc = false;
+            }
+            if (uc.only && uc.only === true) {
+                params.only = true;
+            } else {
+                params.only = false;
             }
             readmeTpl = _.template(this.fs.read(path.join(self.tplPath, "describe.tpl.js")));
             var describeStr = readmeTpl(params);
@@ -324,41 +329,57 @@ module.exports = yeoman.Base.extend({
         //开始生产文件
         ucArray.forEach(function(uc, index) {
             var relativePath="../";
+            var arr =fileNameArray[index].match(new RegExp('\\\\',"g"));
+            if(arr&&arr.length>0){
+              for(var i=0;i<arr.length;i++){
+                relativePath='../'+relativePath;
+              }
+            }
+
             if (uc.build === undefined || uc.build === true) {
-                var handler = false;
-                var handlerName = "";
+                //处理handler
+                let handler = false;
+                let handlerName = "";
                 //判断handler是否开启，如果开启，生成handler文件
                 if (uc.handler && uc.handler === true) {
                     handler = true;
                     handlerName = fileNameArray[index].replace("uc", "handler");
-                    //多层次文件夹 会出现反斜杠
-                    var arr = handlerName.match(new RegExp('\\\\',"g"));
                     handlerName = handlerName.replace( /\\/g,"/");
-                    var handlerPath = path.join(self.handlerPath, handlerName);
-                     //出现一个反斜杠 前面 追加一个../
-                    if(arr&&arr.length>0){
-                      for(var i=0;i<arr.length;i++){
-                        relativePath='../'+relativePath;
-                      }
+                    let handlerPath = path.join(self.handlerPath, handlerName);
+                    if(!fs.existsSync(handlerPath)){
+                        let handlerTpl = _.template(self.fs.read(path.join(self.tplPath, "handler.tpl.js")));
+                        self.fs.write(handlerPath, handlerTpl());
                     }
-                    fs.existsSync(handlerPath, function(exists) {
-                        if (!exists) {
-                            var handlerTpl = _.template(self.fs.read(path.join(self.tplPath, "handler.tpl.js")));
-                            self.fs.write(handlerPath, handlerTpl());
-                        }
-                    });
                 }
-                var fileContent = self._buildUc(itCache, uc);
+                //处理filter
+                let filter = false;
+                let filterName = "";
+                //判断handler是否开启，如果开启，生成handler文件
+                if (uc.filter && uc.filter === true) {
+                    filter = true;
+                    filterName = fileNameArray[index].replace("uc", "filter");
+                    //多层次文件夹 会出现反斜杠
+                    filterName = filterName.replace( /\\/g,"/");
+                    let filterPath = path.join(self.filterPath, filterName);
+                    if(!fs.existsSync(filterPath)){
+                        let handlerTpl = _.template(self.fs.read(path.join(self.tplPath, "filter.tpl.js")));
+                        self.fs.write(filterPath, handlerTpl());
+                    }
+                }
+
+                let fileContent = self._buildUc(itCache, uc);
                 if(self.pageMap){
                     ucContentMap[uc.ucKey] = fileContent;
                 }else{
                     helper.checkUcFile(fileNameArray[index]);
-                    var wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
+                    let wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
                     self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({
                         "body": fileContent,
-                        "handler": handler,
                         "vtestConfig": self.vtestConfig,
+                        "handler": handler,
                         "handlerName": handlerName,
+                        "filter": filter,
+                        "filterName": filterName,
                         "relativePath":relativePath
                     }));
                 }
@@ -389,6 +410,7 @@ module.exports = yeoman.Base.extend({
             self.fs.write(path.join(self.ucDistPath, "all.uc.js"), wrapperTpl({
                 "body": fileContent,
                 "handler":null,
+                "filter":null,
                 "relativePath":"../",
                 "vtestConfig": self.vtestConfig
             }));

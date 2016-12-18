@@ -21,7 +21,10 @@ yo vtester
 表示测试用例，如果出现在文件夹名称中，那说明该文件夹下面都是测试用例文件，如果出现在文件名，那该文件名是测试用例文件
 
 ### handler
-表示处理者，测试用例中个别测试过程会比较复杂，比如判断ajax返回的数据是否是预期的数据等等，都有处理者来处理。如果出现在文件夹名称中，那说明该文件夹下面都是处理中文件，如果出现在文件名，那该文件名是测试用例文件
+表示处理者，测试用例中个别测试过程会比较复杂，比如判断ajax返回的数据是否是预期的数据等等，都有处理者来处理。如果出现在文件夹名称中，那说明该文件夹下面都是handler文件，如果出现在文件名，那该文件是测试用例handler
+
+### filter
+表示过滤器，当前用于过滤android的ListView，获取想要的元素，需要Description配合
 
 ## 目录说明
 
@@ -30,6 +33,7 @@ projectName
 |-src
 	|-dist
 	|-handler
+	|-filter
 	|-uc
 |-test
 ```
@@ -40,8 +44,8 @@ src里面包含项目使用的所有文件
 ####dist
 在项目根目录，执行vtester:build子命令，会把uc文件夹下的文件转换成macaca执行文件到这里
 
-####handler 和 uc
-这里分别存放handler和uc文件，大量的测试代码都在这两个文件夹下面
+####handler,filter,uc
+这里分别存放handler,uc和filter文件，大量的测试代码都在这两个文件夹下面
 
 ##uc文件说明
 uc文件是一个标准node模块文件
@@ -53,6 +57,7 @@ uc:{
 	子uc:{
 		paths:{
 			checker:{
+				checkOp:{}
 			}
 		}
 	}
@@ -64,9 +69,11 @@ uc:{
 
 ```javascript
 module.exports = {
+	ucKey:'uc唯一表示',
 	*title:'标题',
 	build:true(缺省)|false,
-	handler:true(缺省)|false,
+	handler:true|false(缺省),
+	filter:true(缺省)|false,
 	sleep:'停留时间',
 	children:[
 		{
@@ -76,15 +83,18 @@ module.exports = {
 			sleep:'停留时间',
 			paths:[
 				{
-					*title:'标题',
-					*type:'url|click|input',
+					*type:'url|click|input|keys',
 					url:'当type=url时必填',
 					selector:'xpath|name|className|id',
 					element:'selector值',
 					value:'type=input的值'
+					filter:{property:'属性',op:'==|>',value:"直接值|${表达式}"},
+					cacheElement:true|false(缺省),
+					cacheDesc:true|false(缺省),
+					canNull:true|false(缺省),
 					sleep:'停留时间',
 					"checker":{
-						"stop|eq|eqs|ajax":{
+						"stop|eq|eqs|ajax|length":{
 							title:'标题',
 							selector:'xpath|name|className',
 							element:'selector值',
@@ -101,11 +111,15 @@ module.exports = {
 }
 ```
 
-###属性说明
+###通用属性说明
+
+####ucKey
+每个uc都可以用这个属性唯一标示
+> 建议：android用Activity或fragment类名表示
 
 ####title
 
-uc标题，或子uc标题或path标题或checker标题
+uc标题/子uc标题/path标题/checker标题
 
 ####build
 用于控制uc文件是否生成macaca执行文件到dist目录，true生成，false不生成，缺省true
@@ -113,11 +127,11 @@ uc标题，或子uc标题或path标题或checker标题
 ####handler
 用于控制是否对该uc文件生成handler文件，true生成，false不生成，缺省true
 
+####filter
+用于控制是否对该uc文件生成filter文件，true生成，false不生成，缺省true
+
 ####sleep
 停留时间，uc，path和checker都可以设置
-
-####ucKey
-每个uc都可以用这个属性唯一标示
 
 ####preUc
 前置uc，配置了以后，会先执行该uc，再执行当前uc
@@ -125,35 +139,186 @@ uc标题，或子uc标题或path标题或checker标题
 ####selector
 页面元素筛选器类型，组件默认支持xpath,name,className
 
-###element
+####element
 筛选器的具体值
 
-###path.type
-path的类型，当前支持url，click和input
+####filter
+用于过滤获取到的elements列表，过滤出需要的
 
-* url 调转到指定地址
-* click 点击
-* input 输入
+####cacheElement
+如果path中cacheElement为true，则会把获取到的element缓存到driver. cacheElements中
 
-###path.url
-当path.type=url时跳转的url
+####cacheDesc
+如果path中cacheDesc为true，则会把获取到的element的description缓存到driver.cacheDescs中
 
-###path.value
-当path.type=input时输入的值
+###path说明
 
-####checker
-checker用于验证当前操作是否正确，当前自带有stop，eq，eqs，ajax
+> path指一系列的线性操作路径，比如**输入XXX->点击按钮A->点击按钮B->输入YYY**，下面详细介绍当前支持的操作类型
 
-* stop 如果检验成功，则不会再执行后面的path
-* eq 用于检验单个元素是否相等
-* eqs 用于检验多个元素是否相等
-* ajsx用于检验ajax返回的数据是否正确
+####click
 
-####checker.value
-通过selector和element跟该值进行比较
+>支持:Web Android
+>
+>说明:selector和element为空则直接调用click方法。canNull为true则允许获取的元素为空
 
-####checker.url
-ajax执行的url
+完整的配置
 
-####checker.doer
-ajax返回的结果处理者，在handler里面
+```javascript
+{
+	*title:'标题说明',
+	*type:'click',
+	selector:'xpath|name|className|id',
+	element:'selector值',
+	canNull:true|false(缺省)
+}
+```
+
+####get
+
+>支持:Android
+>
+>说明:通过过滤器从列表中获取需要的element
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'get',
+	*selector:'id',
+	*element:'selector值',
+	*filter:{property:'属性',op:'==|>',value:"直接值|${表达式}"},
+	cacheElement:true|false(缺省),
+	cacheDesc:true|false(缺省)
+}
+```
+
+####input
+
+>支持:Web Android
+>
+>说明:向输入框输入值
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'input',
+	*selector:'id',
+	*element:'selector值',
+	value:'输入值'
+}
+```
+
+####keys
+
+>支持:Android
+>
+>说明:输入控制键
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'keys',
+	value:'输入值'
+}
+```
+
+####press
+
+>支持:Android
+>
+>说明:长按,对上一个取到的元素长按
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'press',
+	selector:'xpath|name|className|id',
+	element:'selector值',
+	*value:'输入值'
+}
+```
+
+###checker
+> checker指对一个path的验证，是否符合预期，比如不输入用户名直接点击保存，则**点击保存**可以放一个checker，用于验证是否有提示
+
+####eq
+>支持:Web Android
+>
+>说明:用于检查元素的值，Android需要Description配合
+
+完整的配置
+
+```javascript
+'eq':{
+	*selector:'xpath|name|className|id',
+	*element:'selector值',
+	*value:'检测值'
+}
+```
+
+####eqs
+>支持:Web
+>
+>说明:用于检查多个元素的值
+
+完整的配置
+
+```javascript
+'eqs':{
+	*selector:'xpath|name|className|id',
+	*element:'selector值',
+	*value:'检测值,多个值逗号隔开，如:aaa,bbb,ccc'
+}
+```
+
+####length
+>支持:Android
+>
+>说明:用于检查元素的数量
+
+完整的配置
+
+```javascript
+'length':{
+	*selector:'xpath|name|className|id',
+	*element:'selector值',
+	*value:'检测值,多个值逗号隔开，如:aaa,bbb,ccc'
+}
+```
+
+####prop
+>支持:Android
+>
+>说明:用于检查元素的属性值，需要Description配合
+
+完整的配置
+
+```javascript
+'prop':{
+	*key:'属性名称',
+	*op:'操作符',
+	*value:'直接值|${表达式}'
+}
+```
+
+####stop
+>支持:Web
+>
+>说明:一旦元素的值匹配，停止执行下面的path
+
+完整的配置
+
+```javascript
+'stop':{
+	*selector:'xpath',
+	*element:'selector值',
+	*value:'检测值'
+}
+```

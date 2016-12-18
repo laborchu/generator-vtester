@@ -1,9 +1,14 @@
 require('should');
 let fs = require('fs');
 let path = require('path');
+var should = require('should');
 
 <%if (handler) {%>
   var handler = require("<%=relativePath%>handler/<%=handlerName%>")
+<%}%>
+
+<%if (filter) {%>
+  var filter = require("<%=relativePath%>filter/<%=filterName%>")
 <%}%>
 
 <%if (vtestConfig.platform == 'electron') {%>
@@ -12,6 +17,8 @@ let path = require('path');
         browserName: 'electron'
     });
 
+    const driver = wd.initPromiseChain();
+    driver.cacheElements = [];
 <%} else if (vtestConfig.platform == 'android') {%>
     var wd = require('webdriver-client')({
         platformName: 'Android',
@@ -20,7 +27,13 @@ let path = require('path');
         activity: '<%= vtestConfig.activity%>',
         udid: "<%= vtestConfig.udid%>"
     });
-    require("./vtester.driver.js")(wd,"<%=vtestConfig.platform%>");
+
+    const driver = wd.initPromiseChain();
+    driver.cacheElements = [];
+    driver.cacheDescs = [];
+    var handler = require("<%=relativePath%>handler/handler.js");
+    var filter = require("<%=relativePath%>filter/filter.js");
+    require("./vtester.driver.js")(wd,driver,"<%=vtestConfig.platform%>");
     var router = require("<%=relativePath%>router.uc.js");
 <%}%>
 
@@ -32,13 +45,13 @@ if (fs.existsSync("data.log")) {
     preLastUcKey = fs.readFileSync("data.log", 'utf8');
     if(preLastUcKey.length==0){
         preLastUcKey = null;
+    }else{
+        preLastUcKey = preLastUcKey.replace("\r","").replace("\n","");
     }
 }
 
 describe('自动化测试', function () {
     this.timeout(5 * 60 * 1000);
-    const driver = wd.initPromiseChain();
-
     <%if (vtestConfig.platform == 'electron') {%>
         before(() => {
             return driver

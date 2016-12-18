@@ -1,26 +1,18 @@
 'use strict';
 var Checker = require('../checker');
 var should = require('should');
-var EqPlugin = module.exports = Checker.extend({
+var LengthPlugin = module.exports = Checker.extend({
 	getTemplate:function(config){
-		if (config.selector == "xpath") {
-            return '.elementByXPathOrNull("<%= xpath %>").text()\
-            .then(function(element) {\
-            	"<%= value %>".should.equal(element);\
-            })';
-        }else if(config.selector == "id") {
+		if(config.selector == "id") {
             if(config.vtestConfig.platform==="android"){
-                return `.elementById("<%= id %>").getProperty("text").then(function(prop){
-                    should(prop.text).equal("<%= value %>");
+                return `.elementsById("<%= id %>").then(function(elements){
+                    elements.should.have.length(<%= value %>);
                 })`;
             }
-            
         }
 	},
 	buildParams:function(config){
-		if (config.selector == "xpath") {
-            return { 'xpath': config.element, 'value': config.value};
-        } else if (config.selector == "id") {
+		if (config.selector == "id") {
             if(config.vtestConfig.platform==="android"){
                 return { 'id': this.getAndroidResId(config,config.element), 'value': config.value};
             }else{
@@ -31,7 +23,7 @@ var EqPlugin = module.exports = Checker.extend({
     checkConfig : function(config){
         config.should.have.property('selector').instanceOf(String).ok();
         config.should.have.property('element').instanceOf(String).ok();
-        config.should.have.property('value');
-        EqPlugin.__super__.checkConfig(config);
+        config.should.have.property('value').instanceOf(Number).ok();
+        LengthPlugin.__super__.checkConfig(config);
     }
 });

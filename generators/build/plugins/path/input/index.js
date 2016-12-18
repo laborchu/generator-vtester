@@ -4,12 +4,24 @@ var should = require('should');
 var InputPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
 		if (config.selector == "name") {
-			return '.elementByName("<%= name %>").clear().sendKeys("<%= value %>")';
+            if(config.clear===false){
+                return '.elementByName("<%= name %>").sendKeys("<%= value %>")';
+            }else{
+                return '.elementByName("<%= name %>").clear().sendKeys("<%= value %>")';
+            }
 		}else if(config.selector == "xpath"){
-			return '.elementByXPathOrNull("<%= xpath %>").clear().sendKeys("<%= value %>")';
+            if(config.clear===false){
+                return '.elementByXPathOrNull("<%= xpath %>").sendKeys("<%= value %>")';
+            }else{
+                return '.elementByXPathOrNull("<%= xpath %>").clear().sendKeys("<%= value %>")';
+            }
 		}else if(config.selector == "id") {
             if(config.vtestConfig.platform==="android"){
-                return '.elementById("<%= id %>").clear().sendKeys("<%= value %>")';
+                if(config.clear===false){
+                    return '.elementById("<%= id %>").sendKeys("<%= value %>")';
+                }else{
+                    return '.elementById("<%= id %>").clear().sendKeys("<%= value %>")';
+                }
             }
         }
 	},
@@ -34,6 +46,9 @@ var InputPlugin = module.exports = Path.extend({
             throw new Error('path.selector should in (xpath|name|className|id)');
         }
         config.should.have.property('value').instanceOf(String);
+        if(config.clear!==undefined){
+            config.clear.should.instanceOf(Boolean);
+        }
         InputPlugin.__super__.checkConfig(config);
     }
 });
