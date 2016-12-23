@@ -31,15 +31,25 @@ var GetPlugin = module.exports = Path.extend({
                         }
                     <%}%>
                     <%if(filter){%>
-                        return elements[index].getProperty('description').then(function(desc){
-                            var descObj = JSON.parse(desc.description);
-                            if(descObj['<%=filter.property%>']<%=filter.op%>value){
-                                <%if(cacheElement){%>
-                                    driver.cacheElements.push(elements[index]);
-                                <%}%>
-                                <%if(cacheDesc){%>
-                                    driver.cacheDescs.push(descObj);
-                                <%}%>
+                        return elements[index].getProperty('<%=filter.target%>').then(function(desc){
+                            let cmpV = "";
+                            let cacheV;
+                            <%if(filter.target=="description"){%>
+                                cacheV = JSON.parse(desc.description);
+                                cmpV = descObj['<%=filter.property%>']
+                            <%}else{%>
+                                cmpV = desc.text;
+                                cacheV = desc.text;
+                            <%}%>
+
+                            <%if(cacheElement){%>
+                                driver.cacheElements.push(elements[index]);
+                            <%}%>
+                            <%if(cacheDesc){%>
+                                driver.cacheDescs.push(cacheV);
+                            <%}%>
+
+                            if(cmpV<%=filter.op%>value){
                                 return elements[index];
                             }else{
                                 <%if(mode=='first'){%>
@@ -95,6 +105,9 @@ var GetPlugin = module.exports = Path.extend({
                             result.isExp = true;
                             result.filter.value = config.filter.value.replace("${","").replace("}","");
                         }
+                        if(!result.filter.target){
+                            result.filter.target = "description";
+                        }
                     }
                 }
                 return result;
@@ -116,12 +129,23 @@ var GetPlugin = module.exports = Path.extend({
             config.should.have.property('cacheDesc').instanceOf(Boolean).ok();
         }
         if(config.filter){
-            config.filter.should.have.property('property').instanceOf(String).ok();
             config.filter.should.have.property('op').instanceOf(String).ok();
             config.filter.should.have.property('value');
             if (config.filter.op !== '=='&&config.filter.op !== '>') {
                 throw new Error('filter.op should in (==|>)');
             }
+            if (config.filter.target) {
+                config.filter.target.should.instanceOf(String).ok();
+                if (config.filter.target !== 'description'&&config.filter.target !== 'text') {
+                    throw new Error('filter.target should in (description|text)');
+                }
+            }else{
+                config.filter.target = 'description';
+            }
+            if(config.filter.target=='description'){
+                config.filter.should.have.property('property').instanceOf(String).ok();
+            }
+            
         }
         if(config.mode){
             if (config.mode !== 'first'&&config.mode !== 'last') {

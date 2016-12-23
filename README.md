@@ -93,6 +93,7 @@ module.exports = {
 					cacheElement:true|false(缺省),
 					cacheDesc:true|false(缺省),
 					canNull:true|false(缺省),
+                 context:"webview|navive android专用",
 					error:'错误信息',
 					sleep:'停留时间',
 					"checker":{
@@ -190,7 +191,7 @@ uc标题/子uc标题/path标题/checker标题
 	*selector:'id',
 	*element:'selector值',
 	mode:'first|last',
-	filter:{property:'属性',op:'==|>',value:"直接值|${表达式}"},
+	filter:{target:'description(缺省)|text',property:'属性',op:'==|>',value:"直接值|${表达式}"},
 	cacheElement:true|false(缺省),
 	cacheDesc:true|false(缺省)
 }
@@ -248,7 +249,6 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-
 ####cmd
 
 >支持:Android
@@ -263,6 +263,22 @@ uc标题/子uc标题/path标题/checker标题
 	*type:'press',
 	*cmdCode:'命令名称',
 	*subType:'子类型cache'
+}
+```
+
+####context
+
+>支持:Android
+>
+>说明:切换上下文
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'context',
+	*target:'navite|webview'
 }
 ```
 

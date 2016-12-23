@@ -16,9 +16,15 @@ Plugin.prototype.buildParams = function(config){
 };
 Plugin.prototype.build = function(config){
     var compiled = _.template(this.getTemplate(config));
+    if(config.vtestConfig.platform==="android"){
+    	config.context = config.context || 'navite';
+    }
     return compiled(this.buildParams(config));
 };
 Plugin.prototype.checkConfig = function(config){
+    if (config.hasOwnProperty('context')) {
+        should(config.sleep).instanceOf(Number);
+    }
     if (config.hasOwnProperty('sleep')) {
         should(config.sleep).instanceOf(Number);
     }
