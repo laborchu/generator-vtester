@@ -23,7 +23,7 @@ Plugin.prototype.build = function(config){
 };
 Plugin.prototype.checkConfig = function(config){
     if (config.hasOwnProperty('context')) {
-        should(config.sleep).instanceOf(Number);
+    	['navite','webview'].should.containEql(config.context);
     }
     if (config.hasOwnProperty('sleep')) {
         should(config.sleep).instanceOf(Number);
