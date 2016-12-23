@@ -205,7 +205,7 @@ module.exports = yeoman.Base.extend({
         var readmeTpl;
         var prePath = "";
         //判断uc是否存在path
-        if (uc.paths && _.isArray(uc.paths)) {
+        if (uc.paths && _.isArray(uc.paths)&&uc.paths.length>0) {
             var builder = new UcBuilder();
             self._buildPath(0, uc.paths, builder);
             if (uc.sleep && uc.sleep > 0) {
@@ -325,7 +325,7 @@ module.exports = yeoman.Base.extend({
                 self._iteratorUc(itCache, ucData.children);
             }
         });
-        let ucContentMap = new Map();
+        let ucFileNameMap = new Map();
         //开始生产文件
         ucArray.forEach(function(uc, index) {
             var relativePath="../";
@@ -366,12 +366,22 @@ module.exports = yeoman.Base.extend({
                         self.fs.write(filterPath, handlerTpl());
                     }
                 }
-
+                helper.checkUcFile(fileNameArray[index]);
                 let fileContent = self._buildUc(itCache, uc);
-                if(self.pageMap){
-                    ucContentMap[uc.ucKey] = fileContent;
-                }else{
-                    helper.checkUcFile(fileNameArray[index]);
+                if(self.vtestConfig.platform=='android'){
+                    var fileName = fileNameArray[index];
+                    ucFileNameMap[uc.ucKey] = `require('./${fileName}')(driver,router);`;
+                    let wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "android-wrapper.tpl.js")));
+                    self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({
+                        "body": fileContent,
+                        "handler": handler,
+                        "handlerName": handlerName,
+                        "filter": filter,
+                        "filterName": filterName,
+                        "relativePath":relativePath
+                    }));
+
+                }else if(self.vtestConfig.platform=='electron'){
                     let wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "wrapper.tpl.js")));
                     self.fs.write(path.join(self.ucDistPath, fileNameArray[index]), wrapperTpl({
                         "body": fileContent,
@@ -386,21 +396,21 @@ module.exports = yeoman.Base.extend({
             }
         });
 
-        if(self.pageArray){
+        if(self.vtestConfig.platform=='android'){
             var fileContent = "";
             let itePageMap = function(pageArray){
                 pageArray.forEach(function(page){
                     if(!page.last){
-                        if(ucContentMap[page.ucKey]){
-                            fileContent+=ucContentMap[page.ucKey];
+                        if(ucFileNameMap[page.ucKey]){
+                            fileContent+=ucFileNameMap[page.ucKey];
                         }
                     }
                     if(page.children){
                         itePageMap(page.children);
                     }
                     if(page.last){
-                        if(ucContentMap[page.ucKey]){
-                            fileContent+=ucContentMap[page.ucKey];
+                        if(ucFileNameMap[page.ucKey]){
+                            fileContent+=ucFileNameMap[page.ucKey];
                         }
                     }
                 });

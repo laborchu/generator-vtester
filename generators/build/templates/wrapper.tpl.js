@@ -1,14 +1,10 @@
 require('should');
-let fs = require('fs');
 let path = require('path');
+let fs = require('fs');
 var should = require('should');
 
 <%if (handler) {%>
-  var handler = require("<%=relativePath%>handler/<%=handlerName%>")
-<%}%>
-
-<%if (filter) {%>
-  var filter = require("<%=relativePath%>filter/<%=filterName%>")
+    var handler = require("<%=relativePath%>handler/<%=handlerName%>")
 <%}%>
 
 <%if (vtestConfig.platform == 'electron') {%>
@@ -31,22 +27,20 @@ var should = require('should');
     const driver = wd.initPromiseChain();
     driver.cacheElements = [];
     driver.cacheDescs = [];
+    driver.cacheCmds = [];cmd
     var handler = require("<%=relativePath%>handler/handler.js");
     var filter = require("<%=relativePath%>filter/filter.js");
     require("./vtester.driver.js")(wd,driver,"<%=vtestConfig.platform%>");
     var router = require("<%=relativePath%>router.uc.js");
 <%}%>
 
-let describeStart = function(ucKey){
-    fs.writeFile("data.log",ucKey);
-};
-let preLastUcKey = null;
+driver.preLastUcKey = null;
 if (fs.existsSync("data.log")) {
-    preLastUcKey = fs.readFileSync("data.log", 'utf8');
-    if(preLastUcKey.length==0){
-        preLastUcKey = null;
+    driver.preLastUcKey = fs.readFileSync("data.log", 'utf8');
+    if(driver.preLastUcKey.length==0){
+        driver.preLastUcKey = null;
     }else{
-        preLastUcKey = preLastUcKey.replace("\r","").replace("\n","");
+        driver.preLastUcKey = driver.preLastUcKey.replace("\r","").replace("\n","");
     }
 }
 
@@ -56,7 +50,8 @@ describe('自动化测试', function () {
         before(() => {
             return driver
                 .initDriver()
-                .maximize();
+                .maximize()
+                .setWindowSize(1280, 800);
         });
     <%} else if (vtestConfig.platform == 'android') {%>
         driver.configureHttp({

@@ -5,33 +5,69 @@ var GetPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
 		if(config.selector == "id") {
             return `.elementsById("<%= id %>").then(function(elements){
-                <%if(isExp){%>
-                    let value = <%=filter.value%>;
-                <%}else{%> 
-                    let value = '<%=filter.value%>';
+                should(elements).be.not.empty();
+                let value = "";
+                <%if(filter){%>
+                    <%if(isExp){%>
+                        value = <%=filter.value%>;
+                    <%}else{%> 
+                        value = '<%=filter.value%>';
+                    <%}%> 
                 <%}%> 
+                var error = "<%=error%>";
+                if(error==""){
+                    <%if(filter){%>
+                        error = 'not found <%=filter.property%> <%=filter.op%> '+value+' element';
+                    <%}%> 
+                }
                 var call = function(index){
-                    if(elements.length==index){
-                        return;
-                    }
-                    return elements[index].getProperty('description').then(function(desc){
-                        var descObj = JSON.parse(desc.description);
-                        if(descObj['<%=filter.property%>']<%=filter.op%>value){
-                            <%if(cacheElement){%>
-                                driver.cacheElements.push(elements[index]);
-                            <%}%>
-                            <%if(cacheDesc){%>
-                                driver.cacheDescs.push(descObj);
-                            <%}%>
-                            return elements[index];
-                        }else{
-                            return call(++index);
+                    <%if(mode=='first'){%>
+                        if(elements.length==index){
+                            throw new Error(error)
                         }
-                        
-                    })
+                    <%}else{%> 
+                        if(-1==index){
+                            throw new Error(error)
+                        }
+                    <%}%>
+                    <%if(filter){%>
+                        return elements[index].getProperty('description').then(function(desc){
+                            var descObj = JSON.parse(desc.description);
+                            if(descObj['<%=filter.property%>']<%=filter.op%>value){
+                                <%if(cacheElement){%>
+                                    driver.cacheElements.push(elements[index]);
+                                <%}%>
+                                <%if(cacheDesc){%>
+                                    driver.cacheDescs.push(descObj);
+                                <%}%>
+                                return elements[index];
+                            }else{
+                                <%if(mode=='first'){%>
+                                    return call(++index);
+                                <%}else{%> 
+                                    return call(--index);
+                                <%}%>
+                            }
+                            
+                        })
+                    <%}else{%> 
+                        <%if(cacheDesc){%>
+                            return elements[index].getProperty('description').then(function(desc){
+                                var descObj = JSON.parse(desc.description);
+                                driver.cacheDescs.push(descObj);
+                                return elements[index];
+                            })
+                        <%}else{%> 
+                            return elements[index];
+                        <%}%>
+                    <%}%>
                 }
                 if(elements.length>0){
-                    return call(0);
+                    <%if(mode=='first'){%>
+                        return call(0);
+                    <%}else{%> 
+                        return call(elements.length-1);
+                    <%}%>
                 }
             })`;
         }
@@ -40,19 +76,25 @@ var GetPlugin = module.exports = Path.extend({
 		if(config.selector == "id"){
             var cacheElement = config.cacheElement||false;
             var cacheDesc = config.cacheDesc||false;
+            var mode = config.mode||'first';
+            var error = config.error||'';
 			 if(config.vtestConfig.platform==="android"){
                 var result = { 
-                    'id': this.getAndroidResId(config,config.element), 
-                    'value': config.value,
-                    'filter':config.filter,
+                    'id': this.getAndroidResId(config,config.element),
+                    'mode':mode, 
+                    'filter':null, 
+                    'error':error, 
                     'cacheElement':cacheElement,
                     'cacheDesc':cacheDesc,
                     'isExp':false
                 };
-                if (typeof config.filter.value === 'string' || config.filter.value instanceof String){
-                    if(config.filter.value.startsWith("${")&&config.filter.value.endsWith("}")){
-                        result.isExp = true;
-                        result.filter.value = config.filter.value.replace("${","").replace("}","");
+                if(config.filter){
+                    result.filter = config.filter;
+                    if (typeof config.filter.value === 'string' || config.filter.value instanceof String){
+                        if(config.filter.value.startsWith("${")&&config.filter.value.endsWith("}")){
+                            result.isExp = true;
+                            result.filter.value = config.filter.value.replace("${","").replace("}","");
+                        }
                     }
                 }
                 return result;
@@ -65,7 +107,7 @@ var GetPlugin = module.exports = Path.extend({
         config.should.have.property('selector').instanceOf(String).ok();
         config.should.have.property('element').instanceOf(String).ok();
         if (config.selector !== 'id') {
-            throw new Error('path.selector should in (id)');
+            throw new Error('config.selector should in (id)');
         }
         if (config.cacheElement !== undefined) {
             config.should.have.property('cacheElement').instanceOf(Boolean).ok();
@@ -79,6 +121,11 @@ var GetPlugin = module.exports = Path.extend({
             config.filter.should.have.property('value');
             if (config.filter.op !== '=='&&config.filter.op !== '>') {
                 throw new Error('filter.op should in (==|>)');
+            }
+        }
+        if(config.mode){
+            if (config.mode !== 'first'&&config.mode !== 'last') {
+                throw new Error('config.mode should in (first|last)');
             }
         }
         GetPlugin.__super__.checkConfig(config);

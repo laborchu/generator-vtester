@@ -75,6 +75,7 @@ module.exports = {
 	handler:true|false(缺省),
 	filter:true(缺省)|false,
 	sleep:'停留时间',
+	only:true|false(缺省),
 	children:[
 		{
 			ucKey:'uc唯一表示',
@@ -92,6 +93,7 @@ module.exports = {
 					cacheElement:true|false(缺省),
 					cacheDesc:true|false(缺省),
 					canNull:true|false(缺省),
+					error:'错误信息',
 					sleep:'停留时间',
 					"checker":{
 						"stop|eq|eqs|ajax|length":{
@@ -187,7 +189,8 @@ uc标题/子uc标题/path标题/checker标题
 	*type:'get',
 	*selector:'id',
 	*element:'selector值',
-	*filter:{property:'属性',op:'==|>',value:"直接值|${表达式}"},
+	mode:'first|last',
+	filter:{property:'属性',op:'==|>',value:"直接值|${表达式}"},
 	cacheElement:true|false(缺省),
 	cacheDesc:true|false(缺省)
 }
@@ -242,6 +245,24 @@ uc标题/子uc标题/path标题/checker标题
 	selector:'xpath|name|className|id',
 	element:'selector值',
 	*value:'输入值'
+}
+```
+
+
+####cmd
+
+>支持:Android
+>
+>说明:操作命令，subType=cache,说明缓存最后一个cmdCode的值，为了后面判断
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'press',
+	*cmdCode:'命令名称',
+	*subType:'子类型cache'
 }
 ```
 
@@ -307,6 +328,22 @@ uc标题/子uc标题/path标题/checker标题
 	*value:'直接值|${表达式}'
 }
 ```
+
+####eexist
+>支持:Android
+>
+>说明:用于检查元素是否存在
+
+完整的配置
+
+```javascript
+'eexist':{
+	*selector:'xpath',
+	*element:'selector值'
+}
+```
+
+
 
 ####stop
 >支持:Web

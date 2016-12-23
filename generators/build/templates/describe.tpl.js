@@ -1,9 +1,9 @@
 <%if (isTopUc) {%>
-    if(preLastUcKey==null||preLastUcKey=="<%=ucKey%>"){
-        preLastUcKey = null;
+    if(driver.preLastUcKey==null||driver.preLastUcKey=="<%=ucKey%>"){
+        driver.preLastUcKey = null;
         describe<%if(only){%>.only<%}%>('<%=title%>', function() {
             it('路由',function(){
-                describeStart&&describeStart("<%=ucKey%>");
+                helper.describeStart&&helper.describeStart("<%=ucKey%>");
                 return router(driver,"<%=winName%>");
             });
             <%=body%>
@@ -13,4 +13,4 @@
     describe<%if(only){%>.only<%}%>('<%=title%>', function() {
         <%=body%>
     })
-<%}%>
+    <%}%>
