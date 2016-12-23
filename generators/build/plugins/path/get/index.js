@@ -36,7 +36,7 @@ var GetPlugin = module.exports = Path.extend({
                             let cacheV;
                             <%if(filter.target=="description"){%>
                                 cacheV = JSON.parse(desc.description);
-                                cmpV = descObj['<%=filter.property%>']
+                                cmpV = cacheV['<%=filter.property%>']
                             <%}else{%>
                                 cmpV = desc.text;
                                 cacheV = desc.text;
