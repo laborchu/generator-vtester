@@ -360,7 +360,8 @@ uc标题/子uc标题/path标题/checker标题
 	target:'description(缺省)|value'
 	*key:'属性名称',
 	*op:'操作符',
-	*value:'直接值|${表达式}'
+	*value:'直接值|${表达式}',
+	canNull:'比较的元素可以为空，true|false(缺省)'
 }
 ```
 

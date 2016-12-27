@@ -4,7 +4,14 @@ var should = require('should');
 var GetPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
 		if(config.selector == "id") {
-            return `.elementsById("<%= id %>").then(function(elements){
+            return `.elementsById("<%= id %>").then(elements=>{
+                if(elements.length==0){
+                    <%if(error){%>
+                        throw new Error(error)
+                    <%}else{%> 
+                        return null;
+                    <%}%> 
+                }
                 should(elements).be.not.empty();
                 let value = "";
                 <%if(filter){%>
@@ -14,20 +21,22 @@ var GetPlugin = module.exports = Path.extend({
                         value = '<%=filter.value%>';
                     <%}%> 
                 <%}%> 
-                var error = "<%=error%>";
-                if(error==""){
-                    <%if(filter){%>
-                        error = 'not found <%=filter.property%> <%=filter.op%> '+value+' element';
-                    <%}%> 
-                }
                 var call = function(index){
                     <%if(mode=='first'){%>
                         if(elements.length==index){
-                            throw new Error(error)
+                            <%if(error){%>
+                                throw new Error(error)
+                            <%}else{%> 
+                                return null;
+                            <%}%> 
                         }
                     <%}else{%> 
                         if(-1==index){
-                            throw new Error(error)
+                            <%if(error){%>
+                                throw new Error(error)
+                            <%}else{%> 
+                                return null;
+                            <%}%> 
                         }
                     <%}%>
                     <%if(filter){%>
