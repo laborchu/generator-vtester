@@ -13,6 +13,10 @@ var EqPlugin = module.exports = Checker.extend({
                 return `.elementById("<%= id %>").getProperty("text").then(function(prop){
                     should(prop.text).equal("<%= value %>");
                 })`;
+            }else if(config.vtestConfig.platform==="ios"){
+                return `.elementById("<%= id %>").getProperty("value").then(function(prop){
+                    should(prop).equal("<%= value %>");
+                })`;
             }
             
         }

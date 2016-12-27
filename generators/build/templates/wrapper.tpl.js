@@ -30,8 +30,25 @@ var should = require('should');
     driver.cacheCmds = [];cmd
     var handler = require("<%=relativePath%>handler/handler.js");
     var filter = require("<%=relativePath%>filter/filter.js");
-    require("./vtester.driver.js")(wd,driver,"<%=vtestConfig.platform%>");
-    var router = require("<%=relativePath%>router.uc.js");
+    require("<%=relativePath%>dist/vtester.driver.js")(wd,driver,"<%=vtestConfig.platform%>");
+    var router = require("<%=relativePath%>dist/router.js");
+<%} else if (vtestConfig.platform == 'ios') {%>
+    var wd = require('webdriver-client')({
+        platformName: 'iOS',
+        reuse:3,
+        bundleId: '<%= vtestConfig.bundleId%>',
+        platformVersion: '<%= vtestConfig.platformVersion%>',
+        deviceName: "<%= vtestConfig.deviceName%>"
+    });
+
+    const driver = wd.initPromiseChain();
+    driver.cacheElements = [];
+    driver.cacheDescs = [];
+    driver.cacheCmds = [];
+    var handler = require("<%=relativePath%>handler/handler.js");
+    var filter = require("<%=relativePath%>filter/filter.js");
+    require("<%=relativePath%>dist/vtester.driver.js")(wd,driver,"<%=vtestConfig.platform%>");
+    var router = require("<%=relativePath%>dist/router.js");
 <%}%>
 
 driver.preLastUcKey = null;
@@ -53,7 +70,7 @@ describe('自动化测试', function () {
                 .maximize()
                 .setWindowSize(1280, 800);
         });
-    <%} else if (vtestConfig.platform == 'android') {%>
+    <%} else if (vtestConfig.platform == 'android'||vtestConfig.platform == 'ios') {%>
         driver.configureHttp({
             timeout: 600000
         });

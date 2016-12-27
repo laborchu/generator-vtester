@@ -9,7 +9,7 @@ var KeysPlugin = module.exports = Path.extend({
 		return { 'value': config.value};
 	},
     checkConfig : function(config){
-        config.should.have.property('value').instanceOf(Number);
+        config.should.have.property('value');
         KeysPlugin.__super__.checkConfig(config);
     }
 });

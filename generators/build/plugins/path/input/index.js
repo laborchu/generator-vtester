@@ -16,12 +16,10 @@ var InputPlugin = module.exports = Path.extend({
                 return '.elementByXPathOrNull("<%= xpath %>").clear().sendKeys("<%= value %>")';
             }
 		}else if(config.selector == "id") {
-            if(config.vtestConfig.platform==="android"){
-                if(config.clear===false){
-                    return '.elementById("<%= id %>").sendKeys("<%= value %>")';
-                }else{
-                    return '.elementById("<%= id %>").clear().sendKeys("<%= value %>")';
-                }
+            if(config.clear===false){
+                return '.elementById("<%= id %>").sendKeys("<%= value %>")';
+            }else{
+                return '.elementById("<%= id %>").clear().sendKeys("<%= value %>")';
             }
         }
 	},

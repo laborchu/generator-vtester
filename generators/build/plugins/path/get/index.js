@@ -37,6 +37,9 @@ var GetPlugin = module.exports = Path.extend({
                             <%if(filter.target=="description"){%>
                                 cacheV = JSON.parse(desc.description);
                                 cmpV = cacheV['<%=filter.property%>']
+                            <%}else if(filter.target=="value"){%>
+                                cacheV = JSON.parse(desc);
+                                cmpV = cacheV['<%=filter.property%>']
                             <%}else{%>
                                 cmpV = desc.text;
                                 cacheV = desc.text;
@@ -88,9 +91,8 @@ var GetPlugin = module.exports = Path.extend({
             var cacheDesc = config.cacheDesc||false;
             var mode = config.mode||'first';
             var error = config.error||'';
-			 if(config.vtestConfig.platform==="android"){
+			 if(config.vtestConfig.platform==="android"||config.vtestConfig.platform==="ios"){
                 var result = { 
-                    'id': this.getAndroidResId(config,config.element),
                     'mode':mode, 
                     'filter':null, 
                     'error':error, 
@@ -98,6 +100,11 @@ var GetPlugin = module.exports = Path.extend({
                     'cacheDesc':cacheDesc,
                     'isExp':false
                 };
+                if(config.vtestConfig.platform==="android"){
+                    result.id = this.getAndroidResId(config,config.element);
+                }else{
+                    result.id = config.element;
+                }
                 if(config.filter){
                     result.filter = config.filter;
                     if (typeof config.filter.value === 'string' || config.filter.value instanceof String){
@@ -136,8 +143,10 @@ var GetPlugin = module.exports = Path.extend({
             }
             if (config.filter.target) {
                 config.filter.target.should.instanceOf(String).ok();
-                if (config.filter.target !== 'description'&&config.filter.target !== 'text') {
-                    throw new Error('filter.target should in (description|text)');
+                if (config.filter.target !== 'description' && 
+                    config.filter.target !== 'text' &&
+                    config.filter.target !== 'value') {
+                    throw new Error('filter.target should in (description|text|value)');
                 }
             }else{
                 config.filter.target = 'description';

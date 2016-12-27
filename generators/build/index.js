@@ -81,10 +81,10 @@ module.exports = yeoman.Base.extend({
     defaults: function () {
         if (this.options.projectPath) {
             this.projectPath = path.join(this.options.projectPath);
-            this.tplPath = path.join(this.projectPath, "/src/tpl/");
+            this.tplPath = this.templatePath();
         } else {
             this.projectPath = this.destinationPath();
-            this.tplPath = this.templatePath;
+            this.tplPath = this.templatePath();
         }
         this.vtestConfig = require(path.join(this.projectPath, "vtester.json"));
         this.srcPath = path.join(this.projectPath, "/src/");
@@ -260,7 +260,7 @@ module.exports = yeoman.Base.extend({
         if(this.pageLink){
             for (var key in this.pageLink) {
                 var link = this.pageLink[key];
-                if (link.paths && _.isArray(link.paths)) {
+                if (link.paths && _.isArray(link.paths)&&link.paths.length>0) {
                     var builder = new UcBuilder("return this");
                     self._buildPath(0, link.paths, builder);
                     if (link.sleep && link.sleep > 0) {
@@ -368,7 +368,7 @@ module.exports = yeoman.Base.extend({
                 }
                 helper.checkUcFile(fileNameArray[index]);
                 let fileContent = self._buildUc(itCache, uc);
-                if(self.vtestConfig.platform=='android'){
+                if(self.vtestConfig.platform=='android' || self.vtestConfig.platform=='ios'){
                     var fileName = fileNameArray[index];
                     ucFileNameMap[uc.ucKey] = `require('./${fileName}')(driver,router);`;
                     let wrapperTpl = _.template(self.fs.read(path.join(self.tplPath, "android-wrapper.tpl.js")));
@@ -396,7 +396,7 @@ module.exports = yeoman.Base.extend({
             }
         });
 
-        if(self.vtestConfig.platform=='android'){
+        if(self.vtestConfig.platform=='android' || self.vtestConfig.platform=='ios'){
             var fileContent = "";
             let itePageMap = function(pageArray){
                 pageArray.forEach(function(page){
@@ -425,14 +425,19 @@ module.exports = yeoman.Base.extend({
                 "vtestConfig": self.vtestConfig
             }));
         }
+
         //处理driver扩展
         let driverStr = self._buildDriver();
-        if(driverStr&&driverStr.length>0){
-            let driverTpl = _.template(self.fs.read(path.join(self.srcPath, "vtester.driver.js")));
-            self.fs.write(path.join(self.ucDistPath, "vtester.driver.js"), driverTpl({
-                "body": driverStr
-            }));
-        }
+        let driverTpl = _.template(self.fs.read(path.join(self.tplPath, "vtester-driver.tpl.js")));
+        self.fs.write(path.join(self.ucDistPath, "vtester.driver.js"), driverTpl({
+            "body": driverStr,
+            "vtestConfig": self.vtestConfig
+        }));
+
+        //处理route
+        let routerTpl = _.template(self.fs.read(path.join(self.tplPath, "router.tpl.js")));
+        self.fs.write(path.join(self.ucDistPath, "router.js"), routerTpl({
+        }));
     }
 
 });
