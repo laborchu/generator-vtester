@@ -133,8 +133,8 @@ module.exports = yeoman.Base.extend({
         if (step.type) {
             var pathPlugin = self.plugins.path[step.type];
             if (pathPlugin) {
-                helper.checkPathConfig(pathPlugin, step); //检查配置
                 let config = _.extend(step, {vtestConfig:self.vtestConfig});
+                helper.checkPathConfig(pathPlugin, config); //检查配置
                 builder.append(pathPlugin.build(config));
             }
         }
@@ -155,7 +155,8 @@ module.exports = yeoman.Base.extend({
                 var checkData = step.checker[key];
                 var checkerPlugin = self.plugins.checker[key];
                 if (checkerPlugin) {
-                    helper.checkCheckerConfig(checkerPlugin, checkData); //检查配置
+                    let checkDataConfig = _.extend(checkData,{vtestConfig:self.vtestConfig});
+                    helper.checkCheckerConfig(checkerPlugin, checkDataConfig); //检查配置
                     if (key == "stop") {
                         hasStop = true;
                         let stopBuilder = new UcBuilder();

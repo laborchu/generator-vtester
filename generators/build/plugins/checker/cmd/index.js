@@ -3,7 +3,7 @@ var Checker = require('../checker');
 var should = require('should');
 var CmdPlugin = module.exports = Checker.extend({
 	getTemplate:function(config){
-		if(config.vtestConfig.platform==="android"){
+		if(config.vtestConfig.platform==="android"||config.vtestConfig.platform==="ios"){
                 return `.getContentDesc().then(function(desc){
                     let cmdArray = desc.cmd;
                     cmdArray.should.be.not.empty();
@@ -33,7 +33,7 @@ var CmdPlugin = module.exports = Checker.extend({
             }
 	},
 	buildParams:function(config){
-		if(config.vtestConfig.platform==="android"){
+		if(config.vtestConfig.platform==="android"||config.vtestConfig.platform==="ios"){
             return { 'cmdCode': config.cmdCode};
         }
 	},

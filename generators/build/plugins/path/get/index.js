@@ -158,9 +158,13 @@ var GetPlugin = module.exports = Path.extend({
                     throw new Error('filter.target should in (description|text|value)');
                 }
             }else{
-                config.filter.target = 'description';
+                if(config.vtestConfig.platform==="android"){
+                    config.filter.target = 'description';
+                }else if(config.vtestConfig.platform==="ios"){
+                    config.filter.target = 'value';
+                }
             }
-            if(config.filter.target=='description'){
+            if(config.filter.target=='description'||config.filter.target=='value'){
                 config.filter.should.have.property('property').instanceOf(String).ok();
             }
             
