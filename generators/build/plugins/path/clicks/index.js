@@ -8,7 +8,7 @@ var ClicksPlugin = module.exports = Path.extend({
                 if(index>(elements.length)){
                     return;
                 }
-                return elements[index].click().then(fuction(){
+                return elements[index].click().then(function(){
                     return call(++index);
                 })
             }

@@ -226,7 +226,7 @@ uc标题/子uc标题/path标题/checker标题
 ```javascript
 {
 	*title:'标题说明',
-	*type:'get',
+	*type:'gets',
 	*selector:'id',
 	*element:'selector值',
 	limit:'获取的数量'
