@@ -27,7 +27,7 @@ var should = require('should');
     const driver = wd.initPromiseChain();
     driver.cacheElements = [];
     driver.cacheDescs = [];
-    driver.cacheCmds = [];cmd
+    driver.cacheCmds = [];
     var handler = require("<%=relativePath%>handler/handler.js");
     var filter = require("<%=relativePath%>filter/filter.js");
     require("<%=relativePath%>dist/vtester.driver.js")(wd,driver,"<%=vtestConfig.platform%>");
