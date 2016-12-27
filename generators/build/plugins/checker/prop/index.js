@@ -6,7 +6,7 @@ var PropPlugin = module.exports = Checker.extend({
 		if(config.vtestConfig.platform==="android"||config.vtestConfig.platform==="ios"){
             return `.then(e=>{
                 if(e){
-                    e.getProperty('<%=target%>').then(function(desc){
+                    return e.getProperty('<%=target%>').then(function(desc){
                         <%if(target=="description"){%>
                         var descObj = JSON.parse(desc.description)
                         <%}else if(target=="value"){%>
