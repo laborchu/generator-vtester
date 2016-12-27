@@ -30,7 +30,7 @@ Plugin.prototype.checkConfig = function(config){
     }
 };
 Plugin.prototype.getAndroidResId = function(config,resId){
-	if(resId.startsWith("android:id/")||'webview'==config.context){
+	if(resId.indexOf(":id/")!=-1||'webview'==config.context){
 		return resId;
 	}else{
 		return `${config.vtestConfig.package}:id/${resId}`;
