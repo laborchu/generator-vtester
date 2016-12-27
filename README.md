@@ -176,6 +176,22 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
+
+####clicks
+
+>支持:Web Android
+>
+>说明:点击全面获取的多个元素
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'clicks'
+}
+```
+
 ####get
 
 >支持:Android
@@ -190,10 +206,30 @@ uc标题/子uc标题/path标题/checker标题
 	*type:'get',
 	*selector:'id',
 	*element:'selector值',
+	index:'需要获取元素的下标',
 	mode:'first|last',
 	filter:{target:'description(缺省)|text|value',property:'属性',op:'==|>',value:"直接值|${表达式}"},
 	cacheElement:true|false(缺省),
 	cacheDesc:true|false(缺省)
+}
+```
+
+
+####gets
+
+>支持:Android
+>
+>说明:获取多一个元素
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'get',
+	*selector:'id',
+	*element:'selector值',
+	limit:'获取的数量'
 }
 ```
 

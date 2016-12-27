@@ -5,92 +5,97 @@ var GetPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
 		if(config.selector == "id") {
             return `.elementsById("<%= id %>").then(elements=>{
-                if(elements.length==0){
-                    <%if(error){%>
-                        throw new Error(error)
-                    <%}else{%> 
-                        return null;
-                    <%}%> 
-                }
-                should(elements).be.not.empty();
-                let value = "";
-                <%if(filter){%>
-                    <%if(isExp){%>
-                        value = <%=filter.value%>;
-                    <%}else{%> 
-                        value = '<%=filter.value%>';
-                    <%}%> 
-                <%}%> 
-                var call = function(index){
-                    <%if(mode=='first'){%>
-                        if(elements.length==index){
-                            <%if(error){%>
-                                throw new Error(error)
-                            <%}else{%> 
-                                return null;
-                            <%}%> 
-                        }
-                    <%}else{%> 
-                        if(-1==index){
-                            <%if(error){%>
-                                throw new Error(error)
-                            <%}else{%> 
-                                return null;
-                            <%}%> 
-                        }
-                    <%}%>
+                <%if(index!==undefined){%>
+                    return elements[<%=index-1%>];
+                <%}else{%> 
+                    if(elements.length==0){
+                        <%if(error){%>
+                            throw new Error(error)
+                        <%}else{%> 
+                            return null;
+                        <%}%> 
+                    }
+                    should(elements).be.not.empty();
+                    let value = "";
                     <%if(filter){%>
-                        return elements[index].getProperty('<%=filter.target%>').then(function(desc){
-                            let cmpV = "";
-                            let cacheV;
-                            <%if(filter.target=="description"){%>
-                                cacheV = JSON.parse(desc.description);
-                                cmpV = cacheV['<%=filter.property%>']
-                            <%}else if(filter.target=="value"){%>
-                                cacheV = JSON.parse(desc);
-                                cmpV = cacheV['<%=filter.property%>']
-                            <%}else{%>
-                                cmpV = desc.text;
-                                cacheV = desc.text;
-                            <%}%>
-
-                            <%if(cacheElement){%>
-                                driver.cacheElements.push(elements[index]);
-                            <%}%>
-                            <%if(cacheDesc){%>
-                                driver.cacheDescs.push(cacheV);
-                            <%}%>
-
-                            if(cmpV<%=filter.op%>value){
-                                return elements[index];
-                            }else{
-                                <%if(mode=='first'){%>
-                                    return call(++index);
+                        <%if(isExp){%>
+                            value = <%=filter.value%>;
+                        <%}else{%> 
+                            value = '<%=filter.value%>';
+                        <%}%> 
+                    <%}%> 
+                    var call = function(index){
+                        <%if(mode=='first'){%>
+                            if(elements.length==index){
+                                <%if(error){%>
+                                    throw new Error(error)
                                 <%}else{%> 
-                                    return call(--index);
-                                <%}%>
+                                    return null;
+                                <%}%> 
                             }
-                            
-                        })
-                    <%}else{%> 
-                        <%if(cacheDesc){%>
-                            return elements[index].getProperty('description').then(function(desc){
-                                var descObj = JSON.parse(desc.description);
-                                driver.cacheDescs.push(descObj);
-                                return elements[index];
+                        <%}else{%> 
+                            if(-1==index){
+                                <%if(error){%>
+                                    throw new Error(error)
+                                <%}else{%> 
+                                    return null;
+                                <%}%> 
+                            }
+                        <%}%>
+                        <%if(filter){%>
+                            return elements[index].getProperty('<%=filter.target%>').then(function(desc){
+                                let cmpV = "";
+                                let cacheV;
+                                <%if(filter.target=="description"){%>
+                                    cacheV = JSON.parse(desc.description);
+                                    cmpV = cacheV['<%=filter.property%>']
+                                <%}else if(filter.target=="value"){%>
+                                    cacheV = JSON.parse(desc);
+                                    cmpV = cacheV['<%=filter.property%>']
+                                <%}else{%>
+                                    cmpV = desc.text;
+                                    cacheV = desc.text;
+                                <%}%>
+
+                                <%if(cacheElement){%>
+                                    driver.cacheElements.push(elements[index]);
+                                <%}%>
+                                <%if(cacheDesc){%>
+                                    driver.cacheDescs.push(cacheV);
+                                <%}%>
+
+                                if(cmpV<%=filter.op%>value){
+                                    return elements[index];
+                                }else{
+                                    <%if(mode=='first'){%>
+                                        return call(++index);
+                                    <%}else{%> 
+                                        return call(--index);
+                                    <%}%>
+                                }
+                                
                             })
                         <%}else{%> 
-                            return elements[index];
+                            <%if(cacheDesc){%>
+                                return elements[index].getProperty('description').then(function(desc){
+                                    var descObj = JSON.parse(desc.description);
+                                    driver.cacheDescs.push(descObj);
+                                    return elements[index];
+                                })
+                            <%}else{%> 
+                                return elements[index];
+                            <%}%>
                         <%}%>
-                    <%}%>
-                }
-                if(elements.length>0){
-                    <%if(mode=='first'){%>
-                        return call(0);
-                    <%}else{%> 
-                        return call(elements.length-1);
-                    <%}%>
-                }
+                    }
+                    if(elements.length>0){
+                        <%if(mode=='first'){%>
+                            return call(0);
+                        <%}else{%> 
+                            return call(elements.length-1);
+                        <%}%>
+                    }
+                <%}%>
+                
             })`;
         }
 	},
@@ -107,7 +112,8 @@ var GetPlugin = module.exports = Path.extend({
                     'error':error, 
                     'cacheElement':cacheElement,
                     'cacheDesc':cacheDesc,
-                    'isExp':false
+                    'isExp':false,
+                    'index':config.index
                 };
                 if(config.vtestConfig.platform==="android"){
                     result.id = this.getAndroidResId(config,config.element);
@@ -173,6 +179,9 @@ var GetPlugin = module.exports = Path.extend({
             if (config.mode !== 'first'&&config.mode !== 'last') {
                 throw new Error('config.mode should in (first|last)');
             }
+        }
+        if(config.index){
+            config.index.should.instanceOf(Number);
         }
         GetPlugin.__super__.checkConfig(config);
     }
