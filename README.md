@@ -208,7 +208,7 @@ uc标题/子uc标题/path标题/checker标题
 	*element:'selector值',
 	index:'需要获取元素的下标',
 	mode:'first|last',
-	filter:{target:'description(缺省)|text|value',property:'属性',op:'==|>',value:"直接值|${表达式}"},
+	filter:{target:'description(android缺省)|text|value(ios缺省)',property:'属性',op:'==|>',value:"直接值|${表达式}"},
 	cacheElement:true|false(缺省),
 	cacheDesc:true|false(缺省)
 }
@@ -336,6 +336,22 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
+
+####alert
+>支持:ios android
+>
+>说明:处理alert
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'alert',
+	*target:'dismiss|accept'
+}
+```
+
 ###checker
 > checker指对一个path的验证，是否符合预期，比如不输入用户名直接点击保存，则**点击保存**可以放一个checker，用于验证是否有提示
 
@@ -393,7 +409,7 @@ uc标题/子uc标题/path标题/checker标题
 
 ```javascript
 'prop':{
-	target:'description(缺省)|value'
+	target:'description(android缺省)|value(ios缺省)'
 	*key:'属性名称',
 	*op:'操作符',
 	*value:'直接值|${表达式}',

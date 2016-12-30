@@ -38,7 +38,8 @@ var should = require('should');
         reuse:3,
         bundleId: '<%= vtestConfig.bundleId%>',
         platformVersion: '<%= vtestConfig.platformVersion%>',
-        deviceName: "<%= vtestConfig.deviceName%>"
+        deviceName: "<%= vtestConfig.deviceName%>",
+        autoAcceptAlerts:false
     });
 
     const driver = wd.initPromiseChain();
@@ -67,8 +68,7 @@ describe('自动化测试', function () {
         before(() => {
             return driver
                 .initDriver()
-                .maximize()
-                .setWindowSize(1280, 800);
+                .maximize();
         });
     <%} else if (vtestConfig.platform == 'android'||vtestConfig.platform == 'ios') {%>
         driver.configureHttp({

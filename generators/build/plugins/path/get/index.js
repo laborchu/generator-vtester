@@ -77,12 +77,24 @@ var GetPlugin = module.exports = Path.extend({
                             })
                         <%}else{%> 
                             <%if(cacheDesc){%>
-                                return elements[index].getProperty('description').then(function(desc){
+                                return elements[index].getProperty('<%=cacheTarget%>').then(function(desc){
+                                    <%if(cacheTarget=="description"){%>
                                     var descObj = JSON.parse(desc.description);
+                                    <%}else if(cacheTarget=="value"){%>
+                                    var descObj = JSON.parse(desc);
+                                    <%}else{%>
+                                    var descObj = desc.text;
+                                    <%}%>
                                     driver.cacheDescs.push(descObj);
+                                     <%if(cacheElement){%>
+                                        driver.cacheElements.push(elements[index]);
+                                    <%}%>
                                     return elements[index];
                                 })
                             <%}else{%> 
+                                 <%if(cacheElement){%>
+                                    driver.cacheElements.push(elements[index]);
+                                <%}%>
                                 return elements[index];
                             <%}%>
                         <%}%>
@@ -112,6 +124,7 @@ var GetPlugin = module.exports = Path.extend({
                     'error':error, 
                     'cacheElement':cacheElement,
                     'cacheDesc':cacheDesc,
+                    'cacheTarget':config.cacheTarget,
                     'isExp':false,
                     'index':config.index
                 };
@@ -126,9 +139,6 @@ var GetPlugin = module.exports = Path.extend({
                         if(config.filter.value.startsWith("${")&&config.filter.value.endsWith("}")){
                             result.isExp = true;
                             result.filter.value = config.filter.value.replace("${","").replace("}","");
-                        }
-                        if(!result.filter.target){
-                            result.filter.target = "description";
                         }
                     }
                 }
@@ -145,13 +155,20 @@ var GetPlugin = module.exports = Path.extend({
             throw new Error('config.selector should in (id)');
         }
         if (config.cacheElement !== undefined) {
-            config.should.have.property('cacheElement').instanceOf(Boolean).ok();
+            config.should.have.property('cacheElement').instanceOf(Boolean);
         }
         if (config.cacheDesc !== undefined) {
-            config.should.have.property('cacheDesc').instanceOf(Boolean).ok();
+            config.should.have.property('cacheDesc').instanceOf(Boolean);
+            if(config.cacheDesc){
+                if(config.vtestConfig.platform==="android"){
+                    config.cacheTarget = 'description';
+                }else if(config.vtestConfig.platform==="ios"){
+                    config.cacheTarget = 'value';
+                }
+            }
         }
         if(config.filter){
-            config.filter.should.have.property('op').instanceOf(String).ok();
+            config.filter.should.have.property('op').instanceOf(String);
             config.filter.should.have.property('value');
             if (config.filter.op !== '=='&&config.filter.op !== '>') {
                 throw new Error('filter.op should in (==|>)');

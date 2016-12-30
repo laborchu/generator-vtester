@@ -18,13 +18,13 @@ var ClickPlugin = module.exports = Path.extend({
             }
         } else if (config.selector == "className") {
             if(config.canNull===true){
-                return `.elementByClassName("<%= className %>").then(function(e){
-                    if(e){
-                        return e.click();
+                return `.elementsByClassName("<%= className %>").then(function(e){
+                    if(elements.length><%=index-1%>){
+                        return elements[<%=index-1%>].click();
                     }
                 })`;
             }else{
-                return '.elementByClassName("<%= className %>").click()';
+                return '.elementsByClassName("<%= className %>").then(elements=>elements[<%=index-1%>].click())';
             }
         } else if (config.selector == "name") {
             if(config.canNull===true){
@@ -38,33 +38,35 @@ var ClickPlugin = module.exports = Path.extend({
             }
         }else if(config.selector == "id") {
             if(config.canNull===true){
-                return `.elementByIdOrNull("<%= id %>").then(function(e){
-                    if(e){
-                        return e.click();
+                return `.elementsByIdOrNull("<%= id %>").then(function(elements){
+                    if(elements.length><%=index-1%>){
+                        return elements[<%=index-1%>].click();
                     }
                 })`;
             }else{
-                return '.elementById("<%= id %>").click()';
+                return '.elementsById("<%= id %>").then(elements=>elements[<%=index-1%>].click())';
             }
         }
 	},
 	buildParams:function(config){
+        let result = {index:config.index};
         if(config.selector===undefined){
-            return {};
+            return result;
         }
 		if (config.selector == "xpath") {
-            return { 'xpath': config.element};
+            result.xpath = config.element;
         } else if (config.selector == "className") {
-            return { 'className': config.element};
+            result.className = config.element;
         } else if (config.selector == "name") {
-            return { 'name': config.element};
+            result.name = config.element;
         } else if (config.selector == "id") {
             if(config.vtestConfig.platform==="android"){
-                return { 'id': this.getAndroidResId(config,config.element)};
+                result.id = this.getAndroidResId(config,config.element);
             }else{
-                return { 'id': config.element};
+                result.id = config.element;
             }
         }
+        return result;
 	},
     checkConfig : function(config){
         if(config.selector){
@@ -79,6 +81,11 @@ var ClickPlugin = module.exports = Path.extend({
         }
         if(config.canNull!==undefined){
             config.canNull.should.instanceOf(Boolean);
+        }
+        if(config.index!==undefined){
+            config.index.should.instanceOf(Number);
+        }else{
+            config.index = 1;
         }
         ClickPlugin.__super__.checkConfig(config);
     }

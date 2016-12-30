@@ -5,8 +5,8 @@ var ClicksPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
         return `.then(elements=>{
             let call = function(index){
-                if(index>(elements.length)){
-                    return;
+                if(index>=(elements.length)){
+                    return this;
                 }
                 return elements[index].click().then(function(){
                     return call(++index);

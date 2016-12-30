@@ -7,21 +7,25 @@ var PropPlugin = module.exports = Checker.extend({
             return `.then(e=>{
                 if(e){
                     return e.getProperty('<%=target%>').then(function(desc){
-                        <%if(target=="description"){%>
-                        var descObj = JSON.parse(desc.description)
-                        <%}else if(target=="value"){%>
-                        var descObj = JSON.parse(desc);
-                        <%}%>
-
+                        <%if(key===undefined){%>
+                            let removeValue = desc;
+                        <%}else{%> 
+                            <%if(target=="description"){%>
+                                let removeValue = JSON.parse(desc.description)['<%=key%>'];
+                            <%}else if(target=="value"){%>
+                                let removeValue = JSON.parse(desc)['<%=key%>'];
+                            <%}%>
+                        <%}%> 
+                       
                         <%if(isExp){%>
                             let value = <%=value%>;
                         <%}else{%> 
                             let value = '<%=value%>';
                         <%}%> 
-                        if(!(descObj['<%=key%>']<%=op%>value)){
-                            throw new Error(descObj['<%=key%>']+' not <%=op%> ' + value);
+                        if(!(removeValue<%=op%>value)){
+                            throw new Error(removeValue+' not <%=op%> ' + value);
                         }
-                        return this;
+                        return e;
                     })
                 }else{
                     <%if(canNull){%>
@@ -55,10 +59,12 @@ var PropPlugin = module.exports = Checker.extend({
         }
 	},
     checkConfig : function(config){
-        config.should.have.property('key').instanceOf(String).ok();
+        if (config.key!==undefined) {
+            config.should.have.property('key').instanceOf(String).ok();
+        }
         config.should.have.property('value');
-        if (config.op !== '=='&&config.op !== '!=') {
-            throw new Error('op should in (==|!=)');
+        if (config.op !== '=='&&config.op !== '!='&&config.op !== '<') {
+            throw new Error('op should in (==|!=|<)');
         }
         if (config.target) {
             config.target.should.instanceOf(String).ok();
@@ -67,7 +73,11 @@ var PropPlugin = module.exports = Checker.extend({
                 throw new Error('target should in (description|value)');
             }
         }else{
-            config.target = 'description';
+            if(config.vtestConfig.platform==="android"){
+                config.target = 'description';
+            }else if(config.vtestConfig.platform==="ios"){
+                config.target = 'value';
+            }
         }
         if (config.canNull!==undefined) {
             config.canNull.should.instanceOf(Boolean);

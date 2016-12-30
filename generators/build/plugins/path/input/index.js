@@ -3,6 +3,13 @@ var Path = require('../path');
 var should = require('should');
 var InputPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
+        if(config.selector===undefined){
+            if(config.clear===false){
+                return '.sendKeys("<%= value %>")';
+            }else{
+                return '.clear().sendKeys("<%= value %>")';
+            }
+        }
 		if (config.selector == "name") {
             if(config.clear===false){
                 return '.elementByName("<%= name %>").sendKeys("<%= value %>")';
@@ -24,6 +31,9 @@ var InputPlugin = module.exports = Path.extend({
         }
 	},
 	buildParams:function(config){
+        if(config.selector===undefined){
+            return {'value': config.value };
+        }
 		if (config.selector == "name") {
 			return { 'name': config.element, 'value': config.value };
 		}else if(config.selector == "xpath"){
@@ -37,12 +47,15 @@ var InputPlugin = module.exports = Path.extend({
 		}
 	},
     checkConfig : function(config){
-        config.should.have.property('selector').instanceOf(String).ok();
-        config.should.have.property('element').instanceOf(String).ok();
-        if (config.selector !== 'xpath' && config.selector !== 'name' 
-        	&& config.selector !== 'className' && config.selector !== 'id') {
-            throw new Error('path.selector should in (xpath|name|className|id)');
+        if(config.selector!==undefined){
+            config.should.have.property('element').instanceOf(String).ok();
+            config.should.have.property('selector').instanceOf(String).ok();
+            if (config.selector !== 'xpath' && config.selector !== 'name' && 
+                config.selector !== 'className' && config.selector !== 'id') {
+                throw new Error('path.selector should in (xpath|name|className|id)');
+            }
         }
+        
         config.should.have.property('value').instanceOf(String);
         if(config.clear!==undefined){
             config.clear.should.instanceOf(Boolean);
