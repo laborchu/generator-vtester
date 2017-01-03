@@ -3,14 +3,10 @@ var Path = require('../path');
 var should = require('should');
 var PressPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
-        if(config.vtestConfig.platform==="ios"){
-            return `.getRect().then(rect=>{
-                return driver.touch('drag',{ fromX: rect.x+<%=fromXOffset%>, fromY: rect.y+<%=fromYOffset%>, 
-                                   toX: rect.x+<%=toXOffset%>, toY: rect.y+<%=toYOffset%> })
-            })`;
-        }else{
-            return "";
-        }
+        return `.getRect().then(rect=>{
+            return driver.touch('drag',{ fromX: rect.x+<%=fromXOffset%>, fromY: rect.y+<%=fromYOffset%>, 
+                               toX: rect.x+<%=toXOffset%>, toY: rect.y+<%=toYOffset%> })
+        })`;
 	},
 	buildParams:function(config){
 		return {

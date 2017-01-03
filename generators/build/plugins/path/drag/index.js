@@ -3,12 +3,8 @@ var Path = require('../path');
 var should = require('should');
 var DragPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
-        if(config.vtestConfig.platform==="ios"){
-            return `.touch('drag',{ fromX: <%=fromX%>, fromY: <%=fromY%>, 
+        return `.touch('drag',{ fromX: <%=fromX%>, fromY: <%=fromY%>, 
                                    toX: <%=toX%>, toY: rect.y+<%=toY%> })`;
-        }else{
-            return "";
-        }
 	},
 	buildParams:function(config){
 		return {
