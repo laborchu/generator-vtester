@@ -176,6 +176,23 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
+####tap
+
+>支持:Web Android
+>
+>说明:selector和element为空则直接调用drag.tap方法。canNull为true则允许获取的元素为空
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'tap',
+	selector:'xpath|name|className|id',
+	element:'selector值',
+	canNull:true|false(缺省)
+}
+```
 
 ####clicks
 
@@ -333,6 +350,24 @@ uc标题/子uc标题/path标题/checker标题
    *fromYOffset:'起点y先对元素偏移量',
    *toXOffset:'终点x先对元素偏移量',
    *toYOffset:'终点y先对元素偏移量'
+}
+```
+
+####drag
+>支持:ios android web
+>
+>说明:拖动元素
+
+完整的配置
+
+```javascript
+{
+	*title:'标题说明',
+	*type:'drag',
+	*fromX:'起点x',
+   *fromY:'起点y',
+   *toX:'终点x',
+   *toY:'终点y'
 }
 ```
 
