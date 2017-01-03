@@ -23,16 +23,16 @@ module.exports = function(wd,driver,platform){
     });
 
     wd.addPromiseChainMethod('getContentDesc', function () {
+        <%if (vtestConfig.platform == 'android') {%>
         return this.source()
             .then(res => {
-                <%if (vtestConfig.platform == 'android') {%>
                 var doc = new dom().parseFromString(res);
                 var contentDesc = select(doc, "//node[@resource-id='android:id/content']/@content-desc")[0].value;
                 return JSON.parse(contentDesc);
-                <%}else if (vtestConfig.platform == 'ios') {%>
-                    return JSON.parse(res.tree.children[0].value);
-                <%}%>
             });
+        <%}else if (vtestConfig.platform == 'ios') {%>
+            return this.elementById("id_ios-window").getProperty("value").then(desc=>JSON.parse(desc));
+        <%}%>
     });
 
     wd.addPromiseChainMethod('popCacheElement', function () {
