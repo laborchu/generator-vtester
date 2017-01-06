@@ -25,7 +25,11 @@ var PropPlugin = module.exports = Checker.extend({
                         if(!(removeValue<%=op%>value)){
                             throw new Error(removeValue+' not <%=op%> ' + value);
                         }
-                        return e;
+                        <%if(returnE){%>
+                            return e;
+                        <%}else{%> 
+                            return this;
+                        <%}%> 
                     })
                 }else{
                     <%if(canNull){%>
@@ -45,6 +49,7 @@ var PropPlugin = module.exports = Checker.extend({
                 'value': config.value,
                 'op':config.op,
                 'target':config.target,
+                'returnE':config.returnE,
                 'canNull':config.canNull
             };
             if (typeof config.value === 'string' || config.value instanceof String){
@@ -83,6 +88,11 @@ var PropPlugin = module.exports = Checker.extend({
             config.canNull.should.instanceOf(Boolean);
         }else{
             config.canNull = false;
+        }
+        if (config.returnE!==undefined) {
+            config.should.have.property('returnE').instanceOf(Boolean);
+        }else{
+            config.returnE = true;
         }
         PropPlugin.__super__.checkConfig(config);
     }
