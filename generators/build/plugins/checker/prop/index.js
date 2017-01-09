@@ -26,7 +26,7 @@ var PropPlugin = module.exports = Checker.extend({
                         let compResult = false;
                         <%if(op=="in"){%>
                             compResult = (value.indexOf(removeValue) > -1);
-                        <%}else if(filter.op=="in"){%>
+                        <%}else{%>
                             compResult = (removeValue<%=op%>value);
                         <%}%>
 
