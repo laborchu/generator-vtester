@@ -393,14 +393,14 @@ uc标题/子uc标题/path标题/checker标题
 ####eq
 >支持:Web Android
 >
->说明:用于检查元素的值，Android需要Description配合
+>说明:用于检查元素的值, selector如果没有设置, 则基于上一个元素, Android需要Description配合
 
 完整的配置
 
 ```javascript
 'eq':{
-	*selector:'xpath|name|className|id',
-	*element:'selector值',
+	selector:'xpath|name|className|id',
+	element:'selector值',
 	*value:'检测值'
 }
 ```
