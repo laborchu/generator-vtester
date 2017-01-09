@@ -3,15 +3,15 @@ var Path = require('../path');
 var should = require('should');
 var DragPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
-        return `.touch('drag',{ fromX: <%=fromX%>, fromY: <%=fromY%>, 
-                                   toX: <%=toX%>, toY: rect.y+<%=toY%> })`;
+        return `.touch('drag',{ fromX: <%=fromX%>, fromY: <%=fromY%>,
+                                   toX: <%=toX%>, toY: <%=toY%> })`;
 	},
 	buildParams:function(config){
 		return {
-            "fromXOffset":config.fromXOffset,
-            "fromYOffset":config.fromYOffset,
-            "toXOffset":config.toXOffset,
-            "toYOffset":config.toYOffset
+            "fromX":config.fromX,
+            "fromY":config.fromY,
+            "toX":config.toX,
+            "toY":config.toY
         };
 	},
     checkConfig : function(config){
