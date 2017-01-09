@@ -22,7 +22,15 @@ var PropPlugin = module.exports = Checker.extend({
                         <%}else{%> 
                             let value = '<%=value%>';
                         <%}%> 
-                        if(!(removeValue<%=op%>value)){
+
+                        let compResult = false;
+                        <%if(op=="in"){%>
+                            compResult = (value.indexOf(removeValue) > -1);
+                        <%}else if(filter.op=="in"){%>
+                            compResult = (removeValue<%=op%>value);
+                        <%}%>
+
+                        if(!compResult){
                             throw new Error(removeValue+' not <%=op%> ' + value);
                         }
                         <%if(returnE){%>
@@ -68,8 +76,8 @@ var PropPlugin = module.exports = Checker.extend({
             config.should.have.property('key').instanceOf(String).ok();
         }
         config.should.have.property('value');
-        if (config.op !== '=='&&config.op !== '!='&&config.op !== '<') {
-            throw new Error('op should in (==|!=|<)');
+        if (config.op !== '=='&&config.op !== '!='&&config.op !== '<'&&config.op !== 'in') {
+            throw new Error('op should in (==|!=|<|in)');
         }
         if (config.target) {
             config.target.should.instanceOf(String).ok();

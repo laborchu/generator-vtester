@@ -64,6 +64,13 @@ var GetPlugin = module.exports = Path.extend({
                                     driver.cacheDescs.push(cacheV);
                                 <%}%>
 
+                                let compResult = false;
+                                <%if(filter.op=="=="||filter.op==">"){%>
+                                    compResult = (cmpV<%=filter.op%>value);
+                                <%}else if(filter.op=="in"){%>
+                                    compResult = (value.indexOf(cmpV) > -1);
+                                <%}%>
+
                                 if(cmpV<%=filter.op%>value){
                                     return elements[index];
                                 }else{
@@ -170,8 +177,8 @@ var GetPlugin = module.exports = Path.extend({
         if(config.filter){
             config.filter.should.have.property('op').instanceOf(String);
             config.filter.should.have.property('value');
-            if (config.filter.op !== '=='&&config.filter.op !== '>') {
-                throw new Error('filter.op should in (==|>)');
+            if (config.filter.op !== '=='&&config.filter.op !== '>'&&config.filter.op !== 'in') {
+                throw new Error('filter.op should in (==|>|in)');
             }
             if (config.filter.target) {
                 config.filter.target.should.instanceOf(String).ok();

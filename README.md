@@ -225,7 +225,7 @@ uc标题/子uc标题/path标题/checker标题
 	*element:'selector值',
 	index:'需要获取元素的下标',
 	mode:'first|last',
-	filter:{target:'description(android缺省)|text|value(ios缺省)',property:'属性',op:'==|>',value:"直接值|${表达式}"},
+	filter:{target:'description(android缺省)|text|value(ios缺省)',property:'属性',op:'==|>|in',value:"直接值|${表达式}"},
 	cacheElement:true|false(缺省),
 	cacheDesc:true|false(缺省)
 }
