@@ -71,7 +71,7 @@ var GetPlugin = module.exports = Path.extend({
                                     compResult = (value.indexOf(cmpV) > -1);
                                 <%}%>
 
-                                if(cmpV<%=filter.op%>value){
+                                if(compResult){
                                     return elements[index];
                                 }else{
                                     <%if(mode=='first'){%>
