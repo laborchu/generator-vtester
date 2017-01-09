@@ -38,7 +38,7 @@ var ClickPlugin = module.exports = Path.extend({
             }
         }else if(config.selector == "id") {
             if(config.canNull===true){
-                return `.elementsByIdOrNull("<%= id %>").then(function(elements){
+                return `.elementsById("<%= id %>").then(function(elements){
                     if(elements.length><%=index-1%>){
                         return elements[<%=index-1%>].click();
                     }
