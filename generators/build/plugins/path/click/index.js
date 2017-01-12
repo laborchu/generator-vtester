@@ -4,7 +4,7 @@ var should = require('should');
 var ClickPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
         if(config.selector===undefined){
-            if(config.inThen){
+            if(config.canNull){
                 return `.then(element=>{
                     if(element!=null){
                         return element.click();
@@ -60,7 +60,7 @@ var ClickPlugin = module.exports = Path.extend({
         }
 	},
 	buildParams:function(config){
-        let result = {index:config.index,inThen:config.inThen};
+        let result = {index:config.index};
         if(config.selector===undefined){
             return result;
         }
@@ -97,11 +97,6 @@ var ClickPlugin = module.exports = Path.extend({
             config.index.should.instanceOf(Number);
         }else{
             config.index = 1;
-        }
-        if(config.inThen!==undefined){
-            config.inThen.should.instanceOf(Boolean);
-        }else{
-            config.inThen = false;
         }
         ClickPlugin.__super__.checkConfig(config);
     }
