@@ -172,7 +172,8 @@ uc标题/子uc标题/path标题/checker标题
 	*type:'click',
 	selector:'xpath|name|className|id',
 	element:'selector值',
-	canNull:true|false(缺省)
+	canNull:true|false(缺省),
+	inThen:'true|false(缺省)，是否包含在then里面'
 }
 ```
 
