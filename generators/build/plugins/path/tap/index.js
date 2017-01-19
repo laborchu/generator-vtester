@@ -4,7 +4,18 @@ var should = require('should');
 var TapPlugin = module.exports = Path.extend({
 	getTemplate:function(config){
         if(config.selector===undefined){
-            return ".touch('tap')";
+            if(config.canNull){
+                return `.then(element=>{
+                    if(element!=null){
+                        return element.touch('tap');
+                    }else{
+                        return this;
+                    }
+                })`;
+            }else{
+                return ".touch('tap')";
+            }
+
         }
 		if (config.selector == "xpath") {
             if(config.canNull===true){
