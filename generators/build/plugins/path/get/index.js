@@ -65,7 +65,7 @@ var GetPlugin = module.exports = Path.extend({
                                 <%}%>
 
                                 let compResult = false;
-                                <%if(filter.op=="=="||filter.op==">"){%>
+                                <%if(filter.op=="=="||filter.op==">"||filter.op=="!="){%>
                                     compResult = (cmpV<%=filter.op%>value);
                                 <%}else if(filter.op=="in"){%>
                                     compResult = (value.indexOf(cmpV) > -1);
