@@ -177,8 +177,11 @@ var GetPlugin = module.exports = Path.extend({
         if(config.filter){
             config.filter.should.have.property('op').instanceOf(String);
             config.filter.should.have.property('value');
-            if (config.filter.op !== '=='&&config.filter.op !== '>'&&config.filter.op !== 'in') {
-                throw new Error('filter.op should in (==|>|in)');
+            if (config.filter.op !== '=='&&
+                config.filter.op !== '>'&&
+                config.filter.op !== 'in'&&
+                config.filter.op !== '!=') {
+                throw new Error(`filter.op [${config.filter.op}] should in (==|>|in|!=)`);
             }
             if (config.filter.target) {
                 config.filter.target.should.instanceOf(String).ok();
