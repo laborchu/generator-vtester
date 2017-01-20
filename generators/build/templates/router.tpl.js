@@ -86,9 +86,12 @@ let getPath = function(fromWin,toWin){
             }
             //处理返回路径
             let backCount = 0;
+            let backPath = [];
             if(fromWinArray[sameCount-1]!=fromWin){//判断是否需要回调,当toWin在fromWin后面路径的时候不需要回跳
                 backCount = 1;
+                let preWin = fromWinArray[sameCount-1];
                 for (let i = sameCount; i < fromWinArray.length; i++) {
+                    backPath.push(preWin+"->"+fromWinArray[i]);
                     if(fromWinArray[i]!=fromWin){
                         backCount++;
                     }else{
@@ -116,6 +119,7 @@ let getPath = function(fromWin,toWin){
             if((backCount+goCount)>minMoveObj.moveCount){
                 minMoveObj.backCount = backCount;
                 minMoveObj.goPath = goPath;
+                minMoveObj.backPath = backPath;
             }
         })
     });
@@ -153,6 +157,7 @@ module.exports = function (driver,toWin) {
             return driver;
         }else{
             let minMoveObj = getPath(fromWin,toWin);
+            console.log(minMoveObj);
             var promise = runBack(driver,minMoveObj.backCount);
             return runGo(promise,minMoveObj.goPath);
         }
