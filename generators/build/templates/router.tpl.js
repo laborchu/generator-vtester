@@ -91,7 +91,7 @@ let getPath = function(fromWin,toWin){
                 backCount = 1;
                 let preWin = fromWinArray[sameCount-1];
                 for (let i = sameCount; i < fromWinArray.length; i++) {
-                    backPath.push(preWin+"->"+fromWinArray[i]);
+                    backPath.push(fromWinArray[i]+"->"+preWin);
                     if(fromWinArray[i]!=fromWin){
                         backCount++;
                     }else{
@@ -133,12 +133,17 @@ let getPath = function(fromWin,toWin){
 //    console.log(path);
 //});
 
-let runBack = function(promise,count){
+let runBack = function(promise,count,backPath){
     if(count==0){
         return promise;
     }else{
+        let path = backPath[backPath.length-count];
         count--;
-        return runBack(promise.customBack(),count);
+        if(promise[path]){
+            return runBack(promise[path](),count,backPath);
+        }else{
+            return runBack(promise.customBack(),count,backPath);
+        }
     }
 };
 let runGo = function(promise,goPath){
@@ -146,7 +151,6 @@ let runGo = function(promise,goPath){
         return promise;
     }else{
         let path = goPath.shift();
-        console.log(path);
         return runGo(promise[path](),goPath);
     }
 };
@@ -157,8 +161,7 @@ module.exports = function (driver,toWin) {
             return driver;
         }else{
             let minMoveObj = getPath(fromWin,toWin);
-            console.log(minMoveObj);
-            var promise = runBack(driver,minMoveObj.backCount);
+            var promise = runBack(driver,minMoveObj.backCount,minMoveObj.backPath);
             return runGo(promise,minMoveObj.goPath);
         }
     })
