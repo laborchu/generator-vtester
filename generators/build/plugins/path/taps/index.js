@@ -8,7 +8,7 @@ var TapPlugin = module.exports = Path.extend({
                 if(index>=(elements.length)){
                     return this;
                 }
-                return elements[index].click().then(function(){
+                return elements[index].touch('tap').then(function(){
                     return call(++index);
                 })
             }
