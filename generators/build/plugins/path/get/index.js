@@ -50,8 +50,13 @@ var GetPlugin = module.exports = Path.extend({
                                     cacheV = JSON.parse(desc.description);
                                     cmpV = cacheV['<%=filter.property%>']
                                 <%}else if(filter.target=="value"){%>
-                                    cacheV = JSON.parse(desc);
-                                    cmpV = cacheV['<%=filter.property%>']
+                                    <%if(filter.property){%>
+                                        cacheV = JSON.parse(desc);
+                                        cmpV = cacheV['<%=filter.property%>']
+                                    <%}else{%>
+                                        cacheV = desc;
+                                        cmpV = desc;
+                                    <%}%>   
                                 <%}else{%>
                                     cmpV = desc.text;
                                     cacheV = desc.text;
@@ -198,7 +203,7 @@ var GetPlugin = module.exports = Path.extend({
                 }
             }
             if(config.filter.target=='description'||config.filter.target=='value'){
-                config.filter.should.have.property('property').instanceOf(String).ok();
+                //config.filter.should.have.property('property').instanceOf(String).ok();
             }
             
         }
