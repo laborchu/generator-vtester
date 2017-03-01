@@ -55,7 +55,7 @@ var GetPlugin = module.exports = Path.extend({
                                         cmpV = cacheV['<%=filter.property%>']
                                     <%}else{%>
                                         cacheV = desc;
-                                        cmpV = desc;
+                                        cmpV = desc.replace(/(^\s*)|(\s*$)/g, "");
                                     <%}%>   
                                 <%}else{%>
                                     cmpV = desc.text;
