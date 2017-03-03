@@ -81,7 +81,7 @@ let getPath = function(fromWin,toWin){
                     break;
                 }
             }
-            if(sameCount==0){
+            if(sameCount===0){
                 return;
             }
             //处理返回路径
@@ -121,7 +121,7 @@ let getPath = function(fromWin,toWin){
                 minMoveObj.goPath = goPath;
                 minMoveObj.backPath = backPath;
             }
-        })
+        });
     });
     return minMoveObj;
 };
@@ -134,7 +134,7 @@ let getPath = function(fromWin,toWin){
 //});
 
 let runBack = function(promise,count,backPath){
-    if(count==0){
+    if(count===0){
         return promise;
     }else{
         let path = backPath[backPath.length-count];
@@ -147,10 +147,13 @@ let runBack = function(promise,count,backPath){
     }
 };
 let runGo = function(promise,goPath){
-    if(goPath.length==0){
+    if(goPath.length===0){
         return promise;
     }else{
         let path = goPath.shift();
+        if(!promise[path]){
+            throw new Error('route '+path+' is not set');
+        }
         return runGo(promise[path](),goPath);
     }
 };
@@ -164,5 +167,5 @@ module.exports = function (driver,toWin) {
             var promise = runBack(driver,minMoveObj.backCount,minMoveObj.backPath);
             return runGo(promise,minMoveObj.goPath);
         }
-    })
+    });
 };

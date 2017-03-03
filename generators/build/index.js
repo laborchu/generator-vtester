@@ -27,7 +27,7 @@ class UcBuilder {
     }
 
     toString() {
-        return this.itContent + ";";
+        return this.itContent;
     }
 }
 
@@ -219,6 +219,13 @@ module.exports = yeoman.Base.extend({
                 params.only = false;
             }
             readmeTpl = _.template(this.fs.read(path.join(self.tplPath, "it.tpl.js")));
+            let tempUc = uc;
+            let ucKeyLink = "";
+            while(tempUc.parentUc){
+                ucKeyLink = ((tempUc.parentUc.ucKey||tempUc.parentUc.title)+"-"+ucKeyLink);
+                tempUc = tempUc.parentUc;
+            }
+            params.ucKeyLink = ucKeyLink;
             var itStr = readmeTpl(params);
             if (uc.children && _.isArray(uc.children)) {
                 prePath = itStr;
@@ -232,6 +239,7 @@ module.exports = yeoman.Base.extend({
                 content = prePath;
             }
             uc.children.forEach((child) => {
+                child.parentUc = uc;
                 var it = self._buildUc(itCache, child, index + 1);
                 content = content.concat(it);
             });
