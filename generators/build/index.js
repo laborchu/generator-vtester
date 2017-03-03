@@ -91,7 +91,6 @@ module.exports = yeoman.Base.extend({
         this.ucPath = path.join(this.projectPath, "/src/uc/");
         this.ucDistPath = path.join(this.projectPath, "/src/dist/");
         this.handlerPath = path.join(this.projectPath, "/src/handler/");
-        this.filterPath = path.join(this.projectPath, "/src/filter/");
         this.plugins = {
             path: {},
             checker: {}
@@ -360,21 +359,6 @@ module.exports = yeoman.Base.extend({
                         self.fs.write(handlerPath, handlerTpl());
                     }
                 }
-                //处理filter
-                let filter = false;
-                let filterName = "";
-                //判断handler是否开启，如果开启，生成handler文件
-                if (uc.filter && uc.filter === true) {
-                    filter = true;
-                    filterName = fileNameArray[index].replace("uc", "filter");
-                    //多层次文件夹 会出现反斜杠
-                    filterName = filterName.replace( /\\/g,"/");
-                    let filterPath = path.join(self.filterPath, filterName);
-                    if(!fs.existsSync(filterPath)){
-                        let handlerTpl = _.template(self.fs.read(path.join(self.tplPath, "filter.tpl.js")));
-                        self.fs.write(filterPath, handlerTpl());
-                    }
-                }
                 helper.checkUcFile(fileNameArray[index]);
                 let fileContent = self._buildUc(itCache, uc);
                 if(self.vtestConfig.platform=='android' || self.vtestConfig.platform=='ios'){
@@ -385,8 +369,6 @@ module.exports = yeoman.Base.extend({
                         "body": fileContent,
                         "handler": handler,
                         "handlerName": handlerName,
-                        "filter": filter,
-                        "filterName": filterName,
                         "relativePath":relativePath
                     }));
 
@@ -397,8 +379,6 @@ module.exports = yeoman.Base.extend({
                         "vtestConfig": self.vtestConfig,
                         "handler": handler,
                         "handlerName": handlerName,
-                        "filter": filter,
-                        "filterName": filterName,
                         "relativePath":relativePath
                     }));
                 }
@@ -429,7 +409,6 @@ module.exports = yeoman.Base.extend({
             self.fs.write(path.join(self.ucDistPath, "all.uc.js"), wrapperTpl({
                 "body": fileContent,
                 "handler":null,
-                "filter":null,
                 "relativePath":"../",
                 "vtestConfig": self.vtestConfig
             }));

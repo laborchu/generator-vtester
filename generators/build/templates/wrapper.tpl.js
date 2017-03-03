@@ -29,7 +29,6 @@ var should = require('should');
     driver.cacheDescs = [];
     driver.cacheCmds = [];
     var handler = require("<%=relativePath%>handler/handler.js");
-    var filter = require("<%=relativePath%>filter/filter.js");
     require("<%=relativePath%>dist/vtester.driver.js")(wd,driver,"<%=vtestConfig.platform%>");
     var router = require("<%=relativePath%>dist/router.js");
 <%} else if (vtestConfig.platform == 'ios') {%>
@@ -47,7 +46,6 @@ var should = require('should');
     driver.cacheDescs = [];
     driver.cacheCmds = [];
     var handler = require("<%=relativePath%>handler/handler.js");
-    var filter = require("<%=relativePath%>filter/filter.js");
     require("<%=relativePath%>dist/vtester.driver.js")(wd,driver,"<%=vtestConfig.platform%>");
     var router = require("<%=relativePath%>dist/router.js");
 <%}%>

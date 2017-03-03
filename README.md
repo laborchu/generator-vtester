@@ -73,7 +73,6 @@ module.exports = {
 	*title:'标题',
 	build:true(缺省)|false,
 	handler:true|false(缺省),
-	filter:true(缺省)|false,
 	sleep:'停留时间',
 	only:true|false(缺省),
 	children:[
@@ -129,9 +128,6 @@ uc标题/子uc标题/path标题/checker标题
 
 ####handler
 用于控制是否对该uc文件生成handler文件，true生成，false不生成，缺省true
-
-####filter
-用于控制是否对该uc文件生成filter文件，true生成，false不生成，缺省true
 
 ####sleep
 停留时间，uc，path和checker都可以设置
