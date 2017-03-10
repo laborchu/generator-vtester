@@ -19,7 +19,8 @@
   "dependencies": {
     "yeoman-generator": "^0.23.0",
     "chalk": "^1.0.0",
-    "yosay": "^1.0.0"
+    "yosay": "^1.0.0",
+    "vtester-core": "https://github.com/laborchu/vtester-core.git"
   },
   "devDependencies": {
     "eslint": "^3.1.1",
