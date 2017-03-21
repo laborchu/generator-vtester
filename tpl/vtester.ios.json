@@ -1,0 +1,6 @@
+{
+  "platform": "ios",
+  "platformVersion": "10.1",
+  "bundleId": "bundleId",
+  "deviceName": "deviceName"
+}

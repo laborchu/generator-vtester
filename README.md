@@ -310,7 +310,7 @@ uc标题/子uc标题/path标题/checker标题
 ```javascript
 {
 	*title:'标题说明',
-	*type:'press',
+	*type:'cmd',
 	*cmdCode:'命令名称',
 	*subType:'子类型cache'
 }
@@ -328,7 +328,7 @@ uc标题/子uc标题/path标题/checker标题
 {
 	*title:'标题说明',
 	*type:'context',
-	*target:'navite|webview'
+	*target:'native|webview'
 }
 ```
 

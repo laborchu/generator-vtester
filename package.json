@@ -1,53 +1,26 @@
 {
-  "name": "generator-vtester",
-  "version": "0.0.0",
+  "name": "vtester-cli",
+  "version": "0.1.1",
   "description": "vtester",
-  "homepage": "https://github.com/laborchu/vtester",
+  "homepage": "https://github.com/laborchu/vtester-cli",
   "author": {
     "name": "hulb",
     "email": "laborc2009@gmail.com",
     "url": "https://github.com/laborchu"
   },
-  "files": [
-    "generators"
-  ],
-  "main": "generators/index.js",
+  "main": "index.js",
   "keywords": [
-    "",
-    "yeoman-generator"
+    "macaca",
+    "vtester"
   ],
+  "bin": {
+    "vtester": "./bin/vtester-cli"
+  },
   "dependencies": {
-    "yeoman-generator": "^0.23.0",
+    "commander": "^2.9.0",
     "chalk": "^1.0.0",
-    "yosay": "^1.0.0",
-    "vtester-core": "https://github.com/laborchu/vtester-core.git"
-  },
-  "devDependencies": {
-    "eslint": "^3.1.1",
-    "eslint-config-xo-space": "^0.15.0",
-    "gulp": "^3.9.0",
-    "gulp-coveralls": "^0.1.0",
-    "gulp-eslint": "^3.0.1",
-    "gulp-exclude-gitignore": "^1.0.0",
-    "gulp-istanbul": "^1.0.0",
-    "gulp-line-ending-corrector": "^1.0.1",
-    "gulp-mocha": "^3.0.1",
-    "gulp-nsp": "^2.1.0",
-    "gulp-plumber": "^1.0.0",
-    "should": "^11.1.1",
-    "yeoman-assert": "^2.0.0",
-    "yeoman-test": "^1.0.0"
-  },
-  "eslintConfig": {
-    "extends": "xo-space",
-    "env": {
-      "mocha": true
-    }
-  },
-  "repository": "laborc2009@gmail.com/generator-vtester",
-  "scripts": {
-    "prepublish": "gulp prepublish",
-    "test": "gulp"
+    "vtester-core": "^0.1.0",
+    "npm-update": "~1.0.2"
   },
   "license": "Apache-2.0"
 }

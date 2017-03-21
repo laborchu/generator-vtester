@@ -1,0 +1,6 @@
+{
+  "platform": "android",
+  "package": "package",
+  "activity": "activity",
+  "udid": "udid"
+}

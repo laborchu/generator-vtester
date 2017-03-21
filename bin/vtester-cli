@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+
+'use strict';
+var program = require('commander');
+var update = require('npm-update');
+var pkg = require('../package');
+
+var Logger = require('../lib/logger');
+var CompileHandler = require('../lib/compile.handler');
+var InitHandler = require('../lib/init.handler');
+
+var hanlder = null;
+program
+    .version(pkg.version)
+    .option('--verbose', '查看更多的debug信息');
+
+program
+    .command('compile')
+    .description('编译uc')
+    .action(function() {
+    	hanlder = new CompileHandler();
+    });
+
+program
+    .command('init')
+    .description('初始化项目')
+    .option("-P, --platform [platform]", "ios|android,默认android")
+    .action(function(options) {
+       if (options.platform !== undefined) {
+          if (options.platform !== "ios" && options.platform !== "android") {
+              Logger.error(`-P|--platform should in (ios,android),now ${options.platform}`);
+              process.exit(1);
+          }
+      }else{
+        options.platform = "android";
+      }
+    	hanlder = new InitHandler(options.platform);
+    });
+
+program.parse(process.argv);
+
+if(!hanlder){
+  var cmd = program.args[0];
+  Logger.error(`command ${cmd} not found`);
+  program.help();
+  return;
+}
+
+hanlder.do();
