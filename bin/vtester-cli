@@ -42,7 +42,7 @@ program.parse(process.argv);
 
 let exeStr = `npm view ${pkg.name} version`;
 let npmVersion = execSync(exeStr).toString();
-if (npmVersion &&  pkg.version !== npmVersion) {
+if (npmVersion &&  pkg.version !== npmVersion.trim()) {
   Logger.info(`version ${pkg.version} is outdate`);
   Logger.info(`run: npm i -g ${pkg.name}@${npmVersion}`);
   return;
@@ -50,7 +50,9 @@ if (npmVersion &&  pkg.version !== npmVersion) {
 
 if(!hanlder){
   var cmd = program.args[0];
-  Logger.error(`command ${cmd} not found`);
+  if(cmd!==undefined){
+    Logger.error(`command ${cmd} not found`);
+  }
   program.help();
   return;
 }
