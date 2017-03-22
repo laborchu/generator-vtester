@@ -1,7 +1,0 @@
-general:
-  branches:
-    ignore:
-      - gh-pages # list of branches to ignore
-machine:
-  node:
-    version: v4.2.1
