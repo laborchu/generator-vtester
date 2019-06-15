@@ -38,16 +38,16 @@ projectName
 |-test
 ```
 
-###src
+### src
 src里面包含项目使用的所有文件
 
-####dist
+#### dist
 在项目根目录，执行vtester:build子命令，会把uc文件夹下的文件转换成macaca执行文件到这里
 
-####handler,filter,uc
+#### handler,filter,uc
 这里分别存放handler,uc和filter文件，大量的测试代码都在这两个文件夹下面
 
-##uc文件说明
+## uc文件说明
 uc文件是一个标准node模块文件
 
 uc可以嵌套uc，下层uc是上层uc的子uc，叶子uc(没有子uc)可以包含paths，paths就是用例的执行路径，比如点击按钮-》输入标题-》点击提交等等一系列操作，每个path都可以包含一个checker，checker用于检查当前的path是否符合预期，比如点击提交按钮以后，可以检查一下是否有验证出现，简单结构如下：
@@ -113,48 +113,48 @@ module.exports = {
 }
 ```
 
-###通用属性说明
+### 通用属性说明
 
-####ucKey
+#### ucKey
 每个uc都可以用这个属性唯一标示
 > 建议：android用Activity或fragment类名表示
 
-####title
+#### title
 
 uc标题/子uc标题/path标题/checker标题
 
-####build
+#### build
 用于控制uc文件是否生成macaca执行文件到dist目录，true生成，false不生成，缺省true
 
-####handler
+#### handler
 用于控制是否对该uc文件生成handler文件，true生成，false不生成，缺省true
 
-####sleep
+#### sleep
 停留时间，uc，path和checker都可以设置
 
-####preUc
+#### preUc
 前置uc，配置了以后，会先执行该uc，再执行当前uc
 
-####selector
+#### selector
 页面元素筛选器类型，组件默认支持xpath,name,className
 
-####element
+#### element
 筛选器的具体值
 
-####filter
+#### filter
 用于过滤获取到的elements列表，过滤出需要的
 
-####cacheElement
+#### cacheElement
 如果path中cacheElement为true，则会把获取到的element缓存到driver. cacheElements中
 
-####cacheDesc
+#### cacheDesc
 如果path中cacheDesc为true，则会把获取到的element的description缓存到driver.cacheDescs中
 
-###path说明
+### path说明
 
 > path指一系列的线性操作路径，比如**输入XXX->点击按钮A->点击按钮B->输入YYY**，下面详细介绍当前支持的操作类型
 
-####click
+#### click
 
 >支持:Web Android
 >
@@ -173,7 +173,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####tap
+#### tap
 
 >支持:Web Android
 >
@@ -191,7 +191,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####clicks
+#### clicks
 
 >支持:Web Android
 >
@@ -206,7 +206,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####get
+#### get
 
 >支持:Android
 >
@@ -229,7 +229,7 @@ uc标题/子uc标题/path标题/checker标题
 ```
 
 
-####gets
+#### gets
 
 >支持:Android
 >
@@ -247,7 +247,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####input
+#### input
 
 >支持:Web Android
 >
@@ -265,7 +265,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####keys
+#### keys
 
 >支持:Android
 >
@@ -281,7 +281,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####press
+#### press
 
 >支持:Android
 >
@@ -299,7 +299,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####cmd
+#### cmd
 
 >支持:Android
 >
@@ -316,7 +316,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####context
+#### context
 
 >支持:Android
 >
@@ -332,7 +332,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####edrag
+#### edrag
 >支持:ios
 >
 >说明:拖动元素
@@ -350,7 +350,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####drag
+#### drag
 >支持:ios android web
 >
 >说明:拖动元素
@@ -369,7 +369,7 @@ uc标题/子uc标题/path标题/checker标题
 ```
 
 
-####alert
+#### alert
 >支持:ios android
 >
 >说明:处理alert
@@ -384,10 +384,10 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-###checker
+### checker
 > checker指对一个path的验证，是否符合预期，比如不输入用户名直接点击保存，则**点击保存**可以放一个checker，用于验证是否有提示
 
-####eq
+#### eq
 >支持:Web Android
 >
 >说明:用于检查元素的值, selector如果没有设置, 则基于上一个元素, Android需要Description配合
@@ -402,7 +402,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####eqs
+#### eqs
 >支持:Web
 >
 >说明:用于检查多个元素的值
@@ -417,7 +417,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####length
+#### length
 >支持:Android
 >
 >说明:用于检查元素的数量
@@ -432,7 +432,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####prop
+#### prop
 >支持:Android
 >
 >说明:用于检查元素的属性值，需要Description配合
@@ -450,7 +450,7 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-####eexist
+#### eexist
 >支持:Android
 >
 >说明:用于检查元素是否存在
@@ -466,7 +466,7 @@ uc标题/子uc标题/path标题/checker标题
 
 
 
-####stop
+#### stop
 >支持:Web
 >
 >说明:一旦元素的值匹配，停止执行下面的path
