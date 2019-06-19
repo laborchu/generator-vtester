@@ -1,18 +1,11 @@
 # generator-vtester 
 
-vtester是基于yeoman的generator，用于生成自动化测试项目结构和翻译uc文件成macaca执行文件
+vtester是一个基于模型的翻译工具，用于生成自动化测试项目结构和翻译uc文件成macaca执行文件
 
 ## 安装
 
 ```bash
-npm install -g yo
-npm install -g generator-vtester
-```
-
-然后生成项目:
-
-```bash
-yo vtester
+npm install -g vtester
 ```
 
 ## 名词说明
@@ -299,22 +292,6 @@ uc标题/子uc标题/path标题/checker标题
 }
 ```
 
-#### cmd
-
->支持:Android
->
->说明:操作命令，subType=cache,说明缓存最后一个cmdCode的值，为了后面判断
-
-完整的配置
-
-```javascript
-{
-	*title:'标题说明',
-	*type:'cmd',
-	*cmdCode:'命令名称',
-	*subType:'子类型cache'
-}
-```
 
 #### context
 
