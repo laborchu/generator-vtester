@@ -11,7 +11,7 @@
     "macaca-simple-reportor": "*",
     "macaca-utils": "^0.1.9",
     "should": "^11.2.1",
-    "vtester-plugins": "^0.1.3",
+    "vtester-plugins": "^0.1.5",
     "webdriver-client": "~1.0.20",
     "xmldom": "^0.1.27",
     "xpath.js": "^1.1.0"
